@@ -1,27 +1,16 @@
-# Next.js with react-bootstrap example
+# Ceramic Data Model Explorer
 
-This example shows how to use Next.js along with [react-bootstrap](https://react-bootstrap.github.io/).
+For the [Ceramic Network](https://ceramic.network/) task **Create A System For Discovery And/Or Curation Of DataModels** in the [Gitcoin Hackathon](https://gitcoin.co/issue/ceramicnetwork/ceramic/82/100026725).
 
-## Preview
+## Features To Implement
 
-Preview the example live on [StackBlitz](http://stackblitz.com/):
+* Upvote/downvote data models and schemas
+* List of top rated data models
+* List applications currently using a given data model package
+* List data models by network usage popularity (package installs or streams created using the model)
+* Search or explore existing data models based on key words, categories, application use cases, etc.
+* An ability for developers to propose a change to an existing data model
+* A way for community members to vote and/or discuss the proposed change
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/vercel/next.js/tree/canary/examples/with-react-bootstrap)
+If there is consensus and the proposal is accepted, the system would ideally provide a way to get the original creator/owner to accept the change and update the data model by updating its associated Ceramic streams.
 
-## Deploy your own
-
-Deploy the example using [Vercel](https://vercel.com?utm_source=github&utm_medium=readme&utm_campaign=next-example):
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/git/external?repository-url=https://github.com/vercel/next.js/tree/canary/examples/with-react-bootstrap&project-name=with-react-bootstrap&repository-name=with-react-bootstrap)
-
-## How to use
-
-Execute [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app) with [npm](https://docs.npmjs.com/cli/init) or [Yarn](https://yarnpkg.com/lang/en/docs/cli/create/) to bootstrap the example:
-
-```bash
-npx create-next-app --example with-react-bootstrap with-react-bootstrap-app
-# or
-yarn create next-app --example with-react-bootstrap with-react-bootstrap-app
-```
-
-Deploy it to the cloud with [Vercel](https://vercel.com/new?utm_source=github&utm_medium=readme&utm_campaign=next-example) ([Documentation](https://nextjs.org/docs/deployment)).
