@@ -1,17 +1,33 @@
 import Head from 'next/head'
+import { useEffect } from 'react'
 import { Container, Row, Card, Button } from 'react-bootstrap'
+import { Image } from 'react-bootstrap'
 
 export default function Home() {
+
+  useEffect(() => {
+    (async() => {
+      let r = await fetch('https://api.github.com/orgs/ceramicstudio/repos');
+
+      let j = await r.json();
+
+      let dataModelsRepo = j.filter(x => x.name === 'datamodels')[0];
+
+      console.log(dataModelsRepo);
+    })();
+  }, []);
+
   return (
     <Container className="md-container">
       <Head>
-        <title>ReactJS with react-bootstrap</title>
+        <title>Ceramic Data Model Explorer</title>
         <link rel="icon" href="/favicon-32x32.png" />
       </Head>
       <Container>
-        <h1>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
+        <h2>
+          <Image src="explorer-192.png" width="60" />&nbsp;
+          Ceramic Data Model Explorer
+        </h2>
         <p>
           Get started by editing <code>pages/index.js</code>
         </p>
@@ -75,14 +91,6 @@ export default function Home() {
       </Container>
 
       <footer className="cntr-footer">
-        <a
-          href="https://vercel.com?filter=next.js&utm_source=github&utm_medium=example&utm_campaign=next-example"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className="sml-logo" />
-        </a>
       </footer>
     </Container>
   )
