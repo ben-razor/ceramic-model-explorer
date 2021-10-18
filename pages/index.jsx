@@ -13,6 +13,21 @@ export default function Home() {
 
       let dataModelsRepo = j.filter(x => x.name === 'datamodels')[0];
 
+      r = await fetch('https://api.github.com/repos/ceramicstudio/datamodels/git/trees/main');
+      j = await r.json();
+      
+      let packagesFolder = j.tree.filter(x => x.path === 'packages')[0];
+      let packagesURL = packagesFolder.url;
+
+      r = await fetch(packagesURL);
+      j = await r.json();
+
+      let dataModels = j.tree;
+
+      for(let model of dataModels) {
+        console.log('Model: ', model.path, model.url);
+      }
+      
       console.log(dataModelsRepo);
     })();
   }, []);
