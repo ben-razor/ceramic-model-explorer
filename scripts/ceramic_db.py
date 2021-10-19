@@ -62,6 +62,12 @@ class CeramicDB:
 
         self.con.commit()
 
+    def get_models(self):
+        c = self.con.cursor()
+        c.execute("SELECT * FROM models")
+        rows = c.fetchall()
+        return rows
+
     def search_models(self, search):
         c = self.con.cursor()
 

@@ -4,7 +4,9 @@ from flask import Flask
 from flask import Flask, request, url_for, render_template, jsonify
 from flask_cors import CORS
 from ceramic_db import CeramicDB
+from api_github import ApiGithub
 import json
+import requests
 
 app = Flask(__name__)
 CORS(app)
@@ -41,7 +43,7 @@ def api_rate():
         if userid:
             cdb = CeramicDB()
             ratings = cdb.get_user_ratings(userid)
-            resp = json.dumps(ratings)
+            resp = ratings
         else:
             success = False
             status = 400
@@ -66,7 +68,7 @@ def api_rate():
         else:
             rating = 10
             try:
-                rating = int(rating)
+                rating = int(rating_str)
             except Exception as e:
                 success = False
                 status = 400
@@ -84,9 +86,8 @@ def api_rate():
     response = jsonify({'success': success, 'reason': reason, 'data': resp})
 
     origin = request.headers.get('Origin', '')
-    print('origin', origin)
     origin_no_port = ':'.join(origin.split(':')[:2])
-    
+
     allow_origin_list = ['https://aqua-explore.web.app', 'https://34.77.88.57']
 
     if 'localhost' in request.base_url:
@@ -115,41 +116,31 @@ def api_update_models():
     reason = 'ok'
     resp = {}
 
-    body = request.json
+    cdb = CeramicDB()
 
-    aqua = body.get('aqua', '').strip()
-    lang = body.get('lang', '').strip()
+    model_rows = cdb.get_models()
+    model_id = []
 
-    session_id = uuid.uuid4().hex
+    for model_row in model_rows:
+        model_ids.append(model_row[0])
 
-    file_name = session_id + '.aqua'
-    script_name = file_name
-    script_name_base = script_name.split('.')[0]
-    input_dir = './aqua_scripts'
-    input_file = f'{input_dir}/{file_name}'
+    apiGithub = ApiGithub('ceramicstudio', 'datamodels')
+    
+    dataModelsRepo = apiGithub.getRepositoryInfo()
+    print(dataModelsRepo)
 
-    with open(input_file, 'w') as f:
-        f.write(aqua)
+    tree = apiGithub.lsTree()
+    packagesFolder = list(filter(lambda x: x['path'] == 'packages', tree))
+    packagesURL = packagesFolder[0]['url']
+    print('url', packagesURL)
 
-    return_code, result_string = compile_aqua(file_name, lang)
-
-    if os.path.exists(input_file):
-        os.remove(input_file)
-
-    resp = {
-        'output': result_string
-    }
-
-    if return_code == 0:
-        pass
-    else:
-        success = False
-        reason = 'compilation-failed'
+    get_model_info()
 
     response = jsonify({'success': success, 'reason': reason, 'data': resp})
 
-    origin = request.headers.get('Origin')
+    origin = request.headers.get('Origin', '')
     origin_no_port = ':'.join(origin.split(':')[:2])
+
     allow_origin_list = ['https://aqua-explore.web.app', 'https://34.77.88.57']
 
     if 'localhost' in request.base_url:
@@ -159,6 +150,45 @@ def api_update_models():
         response.headers.add('Access-Control-Allow-Origin', origin)
 
     return response, status
+
+def get_model_info():
+    apiGithub = ApiGithub('ceramicstudio', 'datamodels')
+    
+    dataModelsRepo = apiGithub.getRepositoryInfo()
+    print(dataModelsRepo)
+
+    tree = apiGithub.lsTree()
+    packagesFolder = list(filter(lambda x: x['path'] == 'packages', tree))
+    packagesURL = packagesFolder[0]['url']
+    print('url', packagesURL)
+
+    j = apiGithub.get(packagesURL)
+
+    dataModels = j['tree']
+
+    for model in dataModels:
+        print('Model: ', model['path'], model['url']);
+        rawContentURL = apiGithub.getRawContentURL('main', f'packages/{model["path"]}/package.json')
+        r = requests.get(rawContentURL)
+        j = r.json()
+        print(j)
+
+        rawReadmeURL = apiGithub.getRawContentURL('main', f'packages/{model["path"]}/README.md');
+        tReadme = requests.get(rawReadmeURL)
+        print(tReadme)
+
+        schemasFolderBase = f'packages/{model["path"]}/schemas'
+        schemasFolder = list(filter(lambda x: x['path'].startswith(schemasFolderBase), tree))
+
+        for item in schemasFolder:
+            schemaFile = item['path'].replace(schemasFolderBase, '')
+            
+            if schemaFile:
+                rawSchemaURL = apiGithub.getRawContentURL('main', f'{item["path"]}')
+                print(rawSchemaURL);
+                rSchema = requests.get(rawSchemaURL)
+                tSchema = rSchema.json()
+                print(tSchema)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8878)

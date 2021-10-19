@@ -26,10 +26,13 @@ class ApiGithub:
 
         return j
 
-    def lsTree(self, path, branch='main'):
-        j = self.get('https://api.github.com/repos/{self.githubID}/{self.repoName}/git/trees/{branch}?recursive=1')
+    def lsTree(self, path=None, branch='main'):
 
-        tree = j.tree
+        j = self.get(f'https://api.github.com/repos/{self.githubID}/{self.repoName}/git/trees/{branch}?recursive=1')
+
+        print('TREE', j)
+
+        tree = j['tree']
 
         if path:
             tree = list(filter(lambda x: x['path'] == path, tree))
