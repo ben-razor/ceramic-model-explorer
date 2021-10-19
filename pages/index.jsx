@@ -13,11 +13,11 @@ export default function Home() {
     let apiGithub = new ApiGithub('ceramicstudio', 'datamodels');
 
     (async() => {
-      /*
       let dataModelsRepo = await apiGithub.getRepositoryInfo();
       console.log(dataModelsRepo);
 
-      let packagesFolder = await apiGithub.lsTree('packages');
+      let tree = await apiGithub.lsTree();
+      let packagesFolder = tree.filter(x => x.path === 'packages');
       let packagesURL = packagesFolder[0].url;
       console.log('url', packagesURL);
 
@@ -26,10 +26,35 @@ export default function Home() {
       let dataModels = j.tree;
 
       for(let model of dataModels) {
-        console.log('Model: ', model.path, model.url);
-      }
-      */
+        console.log('Model: ', model.ath, model.url);
+        let rawContentURL = apiGithub.getRawContentURL('main', `packages/${model.path}/package.json`);
+        let r = await fetch(rawContentURL);
+        let j = await r.json();
+        console.log(j);
 
+        let rawReadmeURL = apiGithub.getRawContentURL('main', `packages/${model.path}/README.md`);
+        let rReadme = await fetch(rawReadmeURL);
+        let tReadme = await rReadme.text();
+        console.log(tReadme);
+
+        let schemasFolderBase = `packages/${model.path}/schemas`
+        let schemasFolder = tree.filter(x => x.path.startsWith(schemasFolderBase))
+
+        for(let item of schemasFolder) {
+          let schemaFile = item.path.replace(schemasFolderBase, '');
+          
+          if(schemaFile) {
+            let rawSchemaURL = apiGithub.getRawContentURL('main', `${item.path}`);
+            console.log('schemaFile', schemaFile);
+            console.log(rawSchemaURL);
+            let rSchema = await fetch(rawSchemaURL);
+            let tSchema = await rSchema.text();
+            console.log(tSchema);
+          }
+        }
+      }
+
+      /*
       let pullRequests = await apiGithub.getPullRequests('open'); 
 
       for(let pr of pullRequests) {
@@ -63,6 +88,8 @@ export default function Home() {
           }
         }
       }
+
+      */
     })();
   }, []);
 
