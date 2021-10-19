@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Container, Row, Card, Button } from 'react-bootstrap'
 import { Image } from 'react-bootstrap'
 import ApiGithub from '../lib/ApiGithub'
@@ -42,17 +42,25 @@ export default function Home() {
         let fullName = repo.full_name;
         let repoName = fullName.split('/')[1]; 
 
-        let apiGithub = new ApiGithub(githubID, repoName);
-        let packagesFolder = await apiGithub.lsTree('packages', branch);
+        let apiGithubPR = new ApiGithub(githubID, repoName);
+        let packagesFolder = await apiGithubPR.lsTree('packages', branch);
         let packagesURL = packagesFolder[0].url;
         console.log('url', packagesURL);
 
-        let j = await apiGithub.get(packagesURL);
+        let j = await apiGithubPR.get(packagesURL);
 
         let dataModels = j.tree;
 
         for(let model of dataModels) {
           console.log('Model: ', model.path, model.url);
+
+          if(model.path === 'basic-skills') {
+            let rawContentURL = apiGithubPR.getRawContentURL(branch, 'package.json');
+            console.log('package.json url: ', rawContentURL);
+            let r = await fetch(rawContentURL);
+            let j = await r.json();
+            console.log(j);
+          }
         }
       }
     })();
