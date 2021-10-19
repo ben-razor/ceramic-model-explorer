@@ -2,33 +2,59 @@ import Head from 'next/head'
 import { useEffect } from 'react'
 import { Container, Row, Card, Button } from 'react-bootstrap'
 import { Image } from 'react-bootstrap'
+import ApiGithub from '../lib/ApiGithub'
 
 export default function Home() {
 
   useEffect(() => {
+
+    let token = process.env.NEXT_PUBLIC_GITHUB_TOKEN;
+    console.log('token', token);
+    let apiGithub = new ApiGithub('ceramicstudio', 'datamodels');
+
     (async() => {
-      let r = await fetch('https://api.github.com/orgs/ceramicstudio/repos');
+      /*
+      let dataModelsRepo = await apiGithub.getRepositoryInfo();
+      console.log(dataModelsRepo);
 
-      let j = await r.json();
+      let packagesFolder = await apiGithub.lsTree('packages');
+      let packagesURL = packagesFolder[0].url;
+      console.log('url', packagesURL);
 
-      let dataModelsRepo = j.filter(x => x.name === 'datamodels')[0];
-
-      r = await fetch('https://api.github.com/repos/ceramicstudio/datamodels/git/trees/main');
-      j = await r.json();
-      
-      let packagesFolder = j.tree.filter(x => x.path === 'packages')[0];
-      let packagesURL = packagesFolder.url;
-
-      r = await fetch(packagesURL);
-      j = await r.json();
+      let j = await apiGithub.get(packagesURL);
 
       let dataModels = j.tree;
 
       for(let model of dataModels) {
         console.log('Model: ', model.path, model.url);
       }
-      
-      console.log(dataModelsRepo);
+      */
+
+      let pullRequests = await apiGithub.getPullRequests('open'); 
+
+      for(let pr of pullRequests) {
+        let head = pr.head;
+        let label = head.label;
+        let branch = head.ref;
+        let repo = head.repo;
+
+        let githubID = label.split(':')[0];
+        let fullName = repo.full_name;
+        let repoName = fullName.split('/')[1]; 
+
+        let apiGithub = new ApiGithub(githubID, repoName);
+        let packagesFolder = await apiGithub.lsTree('packages', branch);
+        let packagesURL = packagesFolder[0].url;
+        console.log('url', packagesURL);
+
+        let j = await apiGithub.get(packagesURL);
+
+        let dataModels = j.tree;
+
+        for(let model of dataModels) {
+          console.log('Model: ', model.path, model.url);
+        }
+      }
     })();
   }, []);
 
