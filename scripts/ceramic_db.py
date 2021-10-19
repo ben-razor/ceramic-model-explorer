@@ -1,4 +1,5 @@
 import sqlite3
+import json
 
 create_ratings_sql = """
     CREATE TABLE IF NOT EXISTS ratings (
@@ -13,12 +14,19 @@ create_ratings_sql = """
 create_models_sql = """
     CREATE TABLE IF NOT EXISTS models (
         modelid text NOT NULL PRIMARY KEY,
-        name text,
         version text,
         author text,
         keywords text,
-        schemas text,
         readme text
+    )
+"""
+
+create_schemas_sql = """
+    CREATE TABLE IF NOT EXISTS schemas (
+        schema_path text NOT NULL PRIMARY KEY,
+        modelid text NOT NULL,
+        schema_name text,
+        schema_json text
     )
 """
 
@@ -29,6 +37,7 @@ class CeramicDB:
         c = self.con.cursor()
         c.execute(create_ratings_sql)
         c.execute(create_models_sql)
+        c.execute(create_schemas_sql)
         self.con.commit()
     
     def __del__(self):
@@ -50,15 +59,28 @@ class CeramicDB:
         rows = c.fetchall()
         return rows
 
-    def add_model(self, modelid, name, version, author, keywords, schemas, readme):
+    def add_model(self, modelid, version, author, keywords, readme, schemas):
         c = self.con.cursor()
 
         sql = """
-            INSERT INTO models(modelid, name, version, author, keywords, schemas, readme) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO models(modelid, version, author, keywords, readme) 
+            VALUES (?, ?, ?, ?, ?)
         """
 
-        c.execute(sql, (modelid, name, version, author, keywords, schemas, readme))
+        c.execute(sql, (modelid, version, author, keywords, readme))
+
+        sql = """
+            INSERT INTO schemas(schema_path, modelid, schema_name, schema_json)
+            VALUES (?, ?, ?, ?)
+        """
+
+        schema_tuples = [];
+        for schema in schemas:
+            schema_tuples.append(
+                (schema['path'], modelid, schema['name'], json.dumps(schema['schema_json']))
+            )
+
+        c.executemany(sql, schema_tuples)
 
         self.con.commit()
 
@@ -72,8 +94,9 @@ class CeramicDB:
         c = self.con.cursor()
 
         c.execute("""
-            SELECT * FROM models 
-            WHERE name LIKE ? OR schemas LIKE ? OR keywords LIKE ? OR author LIKE ? OR readme like ?
+            SELECT models.modelid, version, author, keywords, readme FROM models, schemas
+            WHERE models.modelid = schemas.modelid
+            AND models.modelid LIKE ? OR schemas.schema_json LIKE ? OR keywords LIKE ? OR author LIKE ? OR readme like ?
         """, (f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%'))
 
         rows = c.fetchall()

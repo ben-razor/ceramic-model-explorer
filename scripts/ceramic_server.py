@@ -88,7 +88,7 @@ def api_rate():
     origin = request.headers.get('Origin', '')
     origin_no_port = ':'.join(origin.split(':')[:2])
 
-    allow_origin_list = ['https://aqua-explore.web.app', 'https://34.77.88.57']
+    allow_origin_list = ['https://ceramic-explore.vercel.app', 'https://34.77.88.57']
 
     if 'localhost' in request.base_url:
         allow_origin_list = ['http://localhost']
@@ -97,6 +97,64 @@ def api_rate():
         response.headers.add('Access-Control-Allow-Origin', origin)
 
     return response, status
+
+def get_model_info(existing_model_ids=[]):
+    """
+    Get the package.json, README.md and schemas from Github.
+
+    param: existing_model_ids An array of model ids to ignore
+    """
+    apiGithub = ApiGithub('ceramicstudio', 'datamodels')
+
+    tree = apiGithub.lsTree()
+    packagesFolder = list(filter(lambda x: x['path'] == 'packages', tree))
+    packagesURL = packagesFolder[0]['url']
+
+    j = apiGithub.get(packagesURL)
+
+    dataModels = j['tree']
+
+    new_model_infos = []
+
+    for model in dataModels:
+        model_id = model['path']
+
+        if model_id in existing_model_ids:
+            continue
+
+        rawContentURL = apiGithub.getRawContentURL('main', f'packages/{model_id}/package.json')
+        r = requests.get(rawContentURL)
+        package_json = r.json()
+
+        rawReadmeURL = apiGithub.getRawContentURL('main', f'packages/{model_id}/README.md');
+        readme_md = requests.get(rawReadmeURL)
+
+        schemasFolderBase = f'packages/{model_id}/schemas'
+        schemasFolder = list(filter(lambda x: x['path'].startswith(schemasFolderBase), tree))
+
+        schemas = []
+        for item in schemasFolder:
+            schema_path = item['path']
+            schema_file = schema_path.replace(schemasFolderBase, '')
+            
+            if schema_file:
+                rawSchemaURL = apiGithub.getRawContentURL('main', f'{item["path"]}')
+                rSchema = requests.get(rawSchemaURL)
+                schema_json = rSchema.json()
+                schemas.append({
+                    'name': schema_file,
+                    'path': schema_path,
+                    'schema_json': schema_json 
+                })
+
+        new_model_infos.append({
+            'model_id': model_id,
+            'package_json': package_json,
+            'readme_md': readme_md,
+            'schemas': schemas
+        })
+    
+    return new_model_infos
 
 @app.route("/api/update_models", methods=['POST'])
 def api_update_models():
@@ -119,29 +177,37 @@ def api_update_models():
     cdb = CeramicDB()
 
     model_rows = cdb.get_models()
-    model_id = []
+    existing_model_ids = []
 
     for model_row in model_rows:
-        model_ids.append(model_row[0])
+        existing_model_ids.append(model_row[0])
 
-    apiGithub = ApiGithub('ceramicstudio', 'datamodels')
-    
-    dataModelsRepo = apiGithub.getRepositoryInfo()
-    print(dataModelsRepo)
+    print('Existing model ids: ', existing_model_ids)
 
-    tree = apiGithub.lsTree()
-    packagesFolder = list(filter(lambda x: x['path'] == 'packages', tree))
-    packagesURL = packagesFolder[0]['url']
-    print('url', packagesURL)
+    new_model_infos = get_model_info(existing_model_ids)
 
-    get_model_info()
+    for model_info in new_model_infos:
+        model_id = model_info['model_id']
+        package_json = model_info['package_json']
+        readme_md = model_info['readme_md']
+
+        try:
+            cdb.add_model(
+                model_id,
+                package_json['version'],
+                package_json['author'],
+                ','.join(package_json['keywords']),
+                readme_md
+            )
+        except Exception as e:
+            print(e)
 
     response = jsonify({'success': success, 'reason': reason, 'data': resp})
 
     origin = request.headers.get('Origin', '')
     origin_no_port = ':'.join(origin.split(':')[:2])
 
-    allow_origin_list = ['https://aqua-explore.web.app', 'https://34.77.88.57']
+    allow_origin_list = ['https://ceramic-explore.vercel.app', 'https://34.77.88.57']
 
     if 'localhost' in request.base_url:
         allow_origin_list = ['http://localhost']
@@ -150,45 +216,6 @@ def api_update_models():
         response.headers.add('Access-Control-Allow-Origin', origin)
 
     return response, status
-
-def get_model_info():
-    apiGithub = ApiGithub('ceramicstudio', 'datamodels')
-    
-    dataModelsRepo = apiGithub.getRepositoryInfo()
-    print(dataModelsRepo)
-
-    tree = apiGithub.lsTree()
-    packagesFolder = list(filter(lambda x: x['path'] == 'packages', tree))
-    packagesURL = packagesFolder[0]['url']
-    print('url', packagesURL)
-
-    j = apiGithub.get(packagesURL)
-
-    dataModels = j['tree']
-
-    for model in dataModels:
-        print('Model: ', model['path'], model['url']);
-        rawContentURL = apiGithub.getRawContentURL('main', f'packages/{model["path"]}/package.json')
-        r = requests.get(rawContentURL)
-        j = r.json()
-        print(j)
-
-        rawReadmeURL = apiGithub.getRawContentURL('main', f'packages/{model["path"]}/README.md');
-        tReadme = requests.get(rawReadmeURL)
-        print(tReadme)
-
-        schemasFolderBase = f'packages/{model["path"]}/schemas'
-        schemasFolder = list(filter(lambda x: x['path'].startswith(schemasFolderBase), tree))
-
-        for item in schemasFolder:
-            schemaFile = item['path'].replace(schemasFolderBase, '')
-            
-            if schemaFile:
-                rawSchemaURL = apiGithub.getRawContentURL('main', f'{item["path"]}')
-                print(rawSchemaURL);
-                rSchema = requests.get(rawSchemaURL)
-                tSchema = rSchema.json()
-                print(tSchema)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8878)

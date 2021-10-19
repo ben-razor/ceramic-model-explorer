@@ -29,10 +29,14 @@ class TestCeramicDB(unittest.TestCase):
         models = self.cdb.search_models('skill')
         self.assertListEqual(models, [])
 
-        self.cdb.add_model('skill', 'Skill', '0.0.1', 'br', 'skill,talent', '{"schema": "my amazing schema"}', 'Readme info')
+        self.cdb.add_model('skill', '0.0.1', 'br', 'skill,talent', 'Readme info', [{
+            'path': 'packages/skill.json',
+            'name': 'skill.json',
+            'schema_json': { 'schema': 'my amazing schema' }
+        }])
 
         models = self.cdb.search_models('skill')
-        self.assertListEqual(models, [('skill', 'Skill', '0.0.1', 'br', 'skill,talent', '{"schema": "my amazing schema"}', 'Readme info')])
+        self.assertListEqual(models, [('skill', '0.0.1', 'br', 'skill,talent', 'Readme info')])
 
 if __name__ == '__main__':
 	unittest.main()
