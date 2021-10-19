@@ -3,95 +3,73 @@ import { useEffect, useState } from 'react'
 import { Container, Row, Card, Button } from 'react-bootstrap'
 import { Image } from 'react-bootstrap'
 import ApiGithub from '../lib/ApiGithub'
+import { isLocal } from '../lib/helpersHTML'
+import styles from '../style/App.module.css'
 
 export default function Home() {
 
+  const [search, setSearch] = useState('');
+  const [dataModels, setDataModels] = useState([]);
+
   useEffect(() => {
 
-    let token = process.env.NEXT_PUBLIC_GITHUB_TOKEN;
-    console.log('token', token);
-    let apiGithub = new ApiGithub('ceramicstudio', 'datamodels');
-
     (async() => {
-      let dataModelsRepo = await apiGithub.getRepositoryInfo();
-      console.log(dataModelsRepo);
-
-      let tree = await apiGithub.lsTree();
-      let packagesFolder = tree.filter(x => x.path === 'packages');
-      let packagesURL = packagesFolder[0].url;
-      console.log('url', packagesURL);
-
-      let j = await apiGithub.get(packagesURL);
-
-      let dataModels = j.tree;
-
-      for(let model of dataModels) {
-        console.log('Model: ', model.ath, model.url);
-        let rawContentURL = apiGithub.getRawContentURL('main', `packages/${model.path}/package.json`);
-        let r = await fetch(rawContentURL);
-        let j = await r.json();
-        console.log(j);
-
-        let rawReadmeURL = apiGithub.getRawContentURL('main', `packages/${model.path}/README.md`);
-        let rReadme = await fetch(rawReadmeURL);
-        let tReadme = await rReadme.text();
-        console.log(tReadme);
-
-        let schemasFolderBase = `packages/${model.path}/schemas`
-        let schemasFolder = tree.filter(x => x.path.startsWith(schemasFolderBase))
-
-        for(let item of schemasFolder) {
-          let schemaFile = item.path.replace(schemasFolderBase, '');
-          
-          if(schemaFile) {
-            let rawSchemaURL = apiGithub.getRawContentURL('main', `${item.path}`);
-            console.log('schemaFile', schemaFile);
-            console.log(rawSchemaURL);
-            let rSchema = await fetch(rawSchemaURL);
-            let tSchema = await rSchema.text();
-            console.log(tSchema);
-          }
-        }
+      let host = 'https://benrazor.net:8878';
+      if(isLocal()) {
+          host = `http://localhost:8878`;
       }
 
-      /*
-      let pullRequests = await apiGithub.getPullRequests('open'); 
+      let r = await fetch(host + '/api/search_models?' + new URLSearchParams({
+        "search": search
+      }))
 
-      for(let pr of pullRequests) {
-        let head = pr.head;
-        let label = head.label;
-        let branch = head.ref;
-        let repo = head.repo;
+      let j = await r.json();
 
-        let githubID = label.split(':')[0];
-        let fullName = repo.full_name;
-        let repoName = fullName.split('/')[1]; 
-
-        let apiGithubPR = new ApiGithub(githubID, repoName);
-        let packagesFolder = await apiGithubPR.lsTree('packages', branch);
-        let packagesURL = packagesFolder[0].url;
-        console.log('url', packagesURL);
-
-        let j = await apiGithubPR.get(packagesURL);
-
-        let dataModels = j.tree;
-
-        for(let model of dataModels) {
-          console.log('Model: ', model.path, model.url);
-
-          if(model.path === 'basic-skills') {
-            let rawContentURL = apiGithubPR.getRawContentURL(branch, 'package.json');
-            console.log('package.json url: ', rawContentURL);
-            let r = await fetch(rawContentURL);
-            let j = await r.json();
-            console.log(j);
-          }
-        }
-      }
-
-      */
+      setDataModels(j.data);
     })();
-  }, []);
+  }, [search]);
+
+  function getResultsUI(dataModels) {
+    let resultsRows = [];
+
+    for(let model of dataModels) {
+      let id = model[0];
+      let name = model[0].split('-').map(x => x[0].toUpperCase() + x.slice(1)).join(' ');
+      let version = model[1];
+      let author = model[2];
+      let tags = model[3];
+      let github = `https://github.com/ceramicstudio/datamodels/tree/main/packages/${id}`;
+      let npm = `@datamodels/${id}`;
+
+      resultsRows.push(
+        <div className={styles.dataModelResult}>
+          <div className={styles.dataModelResultHeader}>
+            <h3>{name}</h3>
+          </div>
+          <div className={styles.dataModelResultContent}>
+            <div className={styles.dataModelResultRow}>
+              <div className={styles.dataModelResultTitle}>NPM Package</div>
+              <div className={styles.dataModelResultValue}>{npm}</div>
+            </div>
+            <div className={styles.dataModelResultRow}>
+              <div className={styles.dataModelResultTitle}>Version</div>
+              <div className={styles.dataModelResultValue}>{version}</div>
+            </div>
+            <div className={styles.dataModelResultRow}>
+              <div className={styles.dataModelResultTitle}>Author</div>
+              <div className={styles.dataModelResultValue}>{author}</div>
+            </div>
+            <div className={styles.dataModelResultRow}>
+              <div className={styles.dataModelResultTitle}>Tags</div>
+              <div className={styles.dataModelResultValue}>{tags}</div>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    return resultsRows;
+  }
 
   return (
     <Container className="md-container">
@@ -104,9 +82,12 @@ export default function Home() {
           <Image src="explorer-192.png" width="60" />&nbsp;
           Ceramic Data Model Explorer
         </h2>
-        <p>
-          Get started by editing <code>pages/index.js</code>
-        </p>
+        <div>
+          <input type="text" value={search} onChange={e => setSearch(e.target.value)} />
+        </div>
+        <div>
+          {getResultsUI(dataModels)}
+        </div>
         <Container>
           <Row className="justify-content-md-between">
             <Card className="sml-card">
