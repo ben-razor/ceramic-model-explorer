@@ -30,8 +30,6 @@ class ApiGithub:
 
         j = self.get(f'https://api.github.com/repos/{self.githubID}/{self.repoName}/git/trees/{branch}?recursive=1')
 
-        print('TREE', j)
-
         tree = j['tree']
 
         if path:

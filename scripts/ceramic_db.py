@@ -1,5 +1,6 @@
 import sqlite3
 import json
+import os
 
 create_ratings_sql = """
     CREATE TABLE IF NOT EXISTS ratings (
@@ -67,7 +68,9 @@ class CeramicDB:
             VALUES (?, ?, ?, ?, ?)
         """
 
-        c.execute(sql, (modelid, version, author, keywords, readme))
+        values = (modelid, version, author, keywords, readme)
+        print(values)
+        c.execute(sql, values)
 
         sql = """
             INSERT INTO schemas(schema_path, modelid, schema_name, schema_json)
@@ -94,9 +97,9 @@ class CeramicDB:
         c = self.con.cursor()
 
         c.execute("""
-            SELECT models.modelid, version, author, keywords, readme FROM models, schemas
+            SELECT DISTINCT models.modelid, version, author, keywords FROM models, schemas
             WHERE models.modelid = schemas.modelid
-            AND models.modelid LIKE ? OR schemas.schema_json LIKE ? OR keywords LIKE ? OR author LIKE ? OR readme like ?
+            AND models.modelid LIKE ? OR schemas.schema_json LIKE ? OR keywords LIKE ? OR author LIKE ? or readme LIKE ?
         """, (f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%'))
 
         rows = c.fetchall()

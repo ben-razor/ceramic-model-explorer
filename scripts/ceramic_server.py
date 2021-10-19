@@ -98,6 +98,7 @@ def api_rate():
 
     return response, status
 
+
 def get_model_info(existing_model_ids=[]):
     """
     Get the package.json, README.md and schemas from Github.
@@ -110,7 +111,7 @@ def get_model_info(existing_model_ids=[]):
     packagesFolder = list(filter(lambda x: x['path'] == 'packages', tree))
     packagesURL = packagesFolder[0]['url']
 
-    j = apiGithub.get(packagesURL)
+    j = apiGithub.get(packagesURL) 
 
     dataModels = j['tree']
 
@@ -127,7 +128,7 @@ def get_model_info(existing_model_ids=[]):
         package_json = r.json()
 
         rawReadmeURL = apiGithub.getRawContentURL('main', f'packages/{model_id}/README.md');
-        readme_md = requests.get(rawReadmeURL)
+        readme_md = requests.get(rawReadmeURL).text
 
         schemasFolderBase = f'packages/{model_id}/schemas'
         schemasFolder = list(filter(lambda x: x['path'].startswith(schemasFolderBase), tree))
@@ -185,11 +186,13 @@ def api_update_models():
     print('Existing model ids: ', existing_model_ids)
 
     new_model_infos = get_model_info(existing_model_ids)
+    added_models = []
 
     for model_info in new_model_infos:
         model_id = model_info['model_id']
         package_json = model_info['package_json']
         readme_md = model_info['readme_md']
+        schemas = model_info['schemas']
 
         try:
             cdb.add_model(
@@ -197,10 +200,53 @@ def api_update_models():
                 package_json['version'],
                 package_json['author'],
                 ','.join(package_json['keywords']),
-                readme_md
+                readme_md,
+                schemas
             )
+
+            added_models.append(model_id)
+
         except Exception as e:
             print(e)
+
+    resp = added_models
+    response = jsonify({'success': success, 'reason': reason, 'data': resp})
+
+    origin = request.headers.get('Origin', '')
+    origin_no_port = ':'.join(origin.split(':')[:2])
+
+    allow_origin_list = ['https://ceramic-explore.vercel.app', 'https://34.77.88.57']
+
+    if 'localhost' in request.base_url:
+        allow_origin_list = ['http://localhost']
+
+    if origin_no_port in allow_origin_list:
+        response.headers.add('Access-Control-Allow-Origin', origin)
+
+    return response, status
+
+@app.route("/api/search_models", methods=['GET'])
+def api_search_models():
+    """
+    API endpoint for searching data models
+
+    returns:
+        {
+          'success': ,     // boolean
+          'reason':        // An string error code like 'error-syntax-error'
+          'resp': {
+          }      
+        }
+    """
+    status = 200
+    success = True
+    reason = 'ok'
+    resp = {}
+
+    if request.method == 'GET':
+        search = request.args.get('search', '')
+        cdb = CeramicDB()
+        resp = cdb.search_models(search)
 
     response = jsonify({'success': success, 'reason': reason, 'data': resp})
 
