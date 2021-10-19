@@ -17,7 +17,8 @@ create_models_sql = """
         version text,
         author text,
         keywords text,
-        schemas text
+        schemas text,
+        readme text
     )
 """
 
@@ -49,15 +50,15 @@ class CeramicDB:
         rows = c.fetchall()
         return rows
 
-    def add_model(self, modelid, name, version, author, keywords, schemas):
+    def add_model(self, modelid, name, version, author, keywords, schemas, readme):
         c = self.con.cursor()
 
         sql = """
-            INSERT INTO models(modelid, name, version, author, keywords, schemas) 
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO models(modelid, name, version, author, keywords, schemas, readme) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         """
 
-        c.execute(sql, (modelid, name, version, author, keywords, schemas))
+        c.execute(sql, (modelid, name, version, author, keywords, schemas, readme))
 
         self.con.commit()
 
@@ -66,8 +67,8 @@ class CeramicDB:
 
         c.execute("""
             SELECT * FROM models 
-            WHERE name LIKE ? OR schemas LIKE ? OR keywords LIKE ? OR author LIKE ?
-        """, (f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%'))
+            WHERE name LIKE ? OR schemas LIKE ? OR keywords LIKE ? OR author LIKE ? OR readme like ?
+        """, (f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%'))
 
         rows = c.fetchall()
 
