@@ -3,7 +3,8 @@ import os, uuid
 from flask import Flask
 from flask import Flask, request, url_for, render_template, jsonify
 from flask_cors import CORS
-import sqlite3
+from ceramic_db import CeramicDB
+import json
 
 app = Flask(__name__)
 CORS(app)
@@ -16,10 +17,90 @@ def razor():
     result_string = "Server is up"
     return result_string 
 
+@app.route("/api/rate", methods=['GET', 'POST'])
+def api_rate():
+    """
+    API endpoint for rating data models
+
+    returns:
+        {
+          'success': ,     // boolean
+          'reason':        // An string error code like 'error-syntax-error'
+          'resp': {
+          }      
+        }
+    """
+    status = 200
+    success = True
+    reason = 'ok'
+    resp = {}
+
+    if request.method == 'GET':
+        userid = request.args.get('userid')
+
+        if userid:
+            cdb = CeramicDB()
+            ratings = cdb.get_user_ratings(userid)
+            resp = json.dumps(ratings)
+        else:
+            success = False
+            status = 400
+            reason = 'error-empty-userid'
+
+    elif request.method == 'POST':
+        body = request.json
+
+        userid = body.get('userid', '').strip()
+        modelid = body.get('modelid', '').strip()
+        rating_str = body.get('rating', '').strip()
+        comment = body.get('comment', '').strip()
+
+        if not userid:
+            success = False
+            status = 400
+            reason = 'error-empty-userid'
+        elif not modelid:
+            success = False
+            status = 400
+            reason = 'error-empty-userid'
+        else:
+            rating = 10
+            try:
+                rating = int(rating)
+            except Exception as e:
+                success = False
+                status = 400
+                reason = 'error-invalid-rating'
+
+            if success:
+                cdb = CeramicDB()
+                try:
+                    cdb.rate(userid, modelid, rating, comment)
+                except Exception as e:
+                    success = False
+                    status = 400
+                    reason = 'error-running-query'
+
+    response = jsonify({'success': success, 'reason': reason, 'data': resp})
+
+    origin = request.headers.get('Origin', '')
+    print('origin', origin)
+    origin_no_port = ':'.join(origin.split(':')[:2])
+    
+    allow_origin_list = ['https://aqua-explore.web.app', 'https://34.77.88.57']
+
+    if 'localhost' in request.base_url:
+        allow_origin_list = ['http://localhost']
+
+    if origin_no_port in allow_origin_list:
+        response.headers.add('Access-Control-Allow-Origin', origin)
+
+    return response, status
+
 @app.route("/api/update_models", methods=['POST'])
 def api_update_models():
     """
-    API Endpoint for updating data model information from github
+    API endpoint for updating data model information from github
 
     returns:
         {
@@ -80,4 +161,4 @@ def api_update_models():
     return response, status
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8868)
+    app.run(debug=True, host='0.0.0.0', port=8878)

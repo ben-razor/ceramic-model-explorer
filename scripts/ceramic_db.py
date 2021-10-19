@@ -22,8 +22,8 @@ create_models_sql = """
 """
 
 class CeramicDB:
-    def __init__(self):
-        self.con = sqlite3.connect('ceramic_models.db')
+    def __init__(self, db_name='ceramic_models.db'):
+        self.con = sqlite3.connect(db_name)
 
         c = self.con.cursor()
         c.execute(create_ratings_sql)
@@ -37,7 +37,7 @@ class CeramicDB:
         c = self.con.cursor()
 
         c.execute("""
-            INSERT INTO ratings(userid, model, rating, comment)
+            INSERT INTO ratings(userid, modelid, rating, comment)
             VALUES (?, ?, ?, ?)""",
             (userid, modelid, rating, comment)
         )
@@ -69,6 +69,6 @@ class CeramicDB:
             WHERE name LIKE ? OR schemas LIKE ? OR keywords LIKE ? OR author LIKE ?
         """, (f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%'))
 
-        rows = c.fetchAll()
+        rows = c.fetchall()
 
         return rows
