@@ -23,6 +23,7 @@ export default function Home() {
   const [modelRatings, setModelRatings] = useState({});
   const [ownRatings, setOwnRatings] = useState({});
   const [connecting, setConnecting] = useState(false);
+  const [searchOrder, setSearchOrder] = useState('')
   const { addToast } = useToasts();
 
   const [ceramic, setCeramic] = useState();
@@ -120,9 +121,25 @@ export default function Home() {
 
         return id.includes(lcSearch) || name.includes(lcSearch) || tags.includes(lcSearch) || readme.includes(lcSearch);
       })
+
+      if(searchOrder) {
+        if(searchOrder === 'newest') {
+          _matchingDataModels.reverse();
+        }
+        else if(searchOrder === 'highest-rated') {
+          _matchingDataModels.sort((a, b) => {
+            let id1 = a[0];
+            let id2 = b[0];
+            let rating1 = modelRatings[id1] || 0;
+            let rating2 = modelRatings[id2] || 0;
+            return rating2 - rating1;
+          })
+        }
+      }
+
       setMatchingDataModels(_matchingDataModels);
     }
-  }, [dataModels, search])
+  }, [dataModels, search, searchOrder])
   
   useEffect(() => {
     if(dataModels && host) {
@@ -331,8 +348,13 @@ export default function Home() {
 
       <Container className="md-container">
         <Container>
-          <div>
-            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search for data model..." />
+          <div className={styles.csnBasicSearchBar}>
+            <input className={styles.csnSearchInput} type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search for data model..." />
+            <select className={styles.csnSearchOrderSelect} onChange={e => setSearchOrder(e.target.value)}>
+              <option value="">Oldest</option>
+              <option value="newest">Newest</option>
+              <option value="highest-rated">Highest Rated</option>
+            </select>
           </div>
           <div>
             {getResultsUI(matchingDataModels)}

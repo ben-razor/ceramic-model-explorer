@@ -356,3 +356,22 @@
 .csnConnectButton:disabled {
     color: hsl(150deg, 60%, 40%);
 }
+
+.csnBasicSearchBar {
+    display: flex;
+    justify-content: space-between;
+}
+
+.csnSearchInput {
+    margin-right: 1em;
+    width: 50%;
+    flex: 1;
+    border-radius: 1em;
+    padding: 0 0.5em;
+}
+
+.csnSearchOrderSelect {
+    width: 10em;
+    border-radius: 1em;
+    padding: 0 0.5em;
+}
