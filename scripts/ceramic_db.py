@@ -18,7 +18,8 @@ create_models_sql = """
         version text,
         author text,
         keywords text,
-        readme text
+        readme text,
+        package_json text
     )
 """
 
@@ -60,15 +61,15 @@ class CeramicDB:
         rows = c.fetchall()
         return rows
 
-    def add_model(self, modelid, version, author, keywords, readme, schemas):
+    def add_model(self, modelid, version, author, keywords, readme, package_json, schemas):
         c = self.con.cursor()
 
         sql = """
-            INSERT INTO models(modelid, version, author, keywords, readme) 
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO models(modelid, version, author, keywords, readme, package_json) 
+            VALUES (?, ?, ?, ?, ?, ?)
         """
 
-        values = (modelid, version, author, keywords, readme)
+        values = (modelid, version, author, keywords, readme, json.dumps(package_json))
         print(values)
         c.execute(sql, values)
 
@@ -97,10 +98,23 @@ class CeramicDB:
         c = self.con.cursor()
 
         c.execute("""
-            SELECT DISTINCT models.modelid, version, author, keywords FROM models, schemas
+            SELECT DISTINCT models.modelid, version, author, keywords, readme FROM models, schemas
             WHERE models.modelid = schemas.modelid
             AND models.modelid LIKE ? OR schemas.schema_json LIKE ? OR keywords LIKE ? OR author LIKE ? or readme LIKE ?
         """, (f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%'))
+
+        rows = c.fetchall()
+
+        return rows
+    
+    def get_model(self, modelid):
+        c = self.con.cursor()
+
+        c.execute("""
+            SELECT models.modelid, version, author, keywords, readme, package_json, schema_path, schema_name, schema_json
+            FROM models, schemas
+            WHERE models.modelid = schemas.modelid
+        """)
 
         rows = c.fetchall()
 

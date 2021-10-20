@@ -201,6 +201,7 @@ def api_update_models():
                 package_json['author'],
                 ','.join(package_json['keywords']),
                 readme_md,
+                package_json,
                 schemas
             )
 
@@ -227,6 +228,44 @@ def api_update_models():
 
 @app.route("/api/search_models", methods=['GET'])
 def api_search_models():
+    """
+    API endpoint for searching data models
+
+    returns:
+        {
+          'success': ,     // boolean
+          'reason':        // An string error code like 'error-syntax-error'
+          'resp': {
+          }      
+        }
+    """
+    status = 200
+    success = True
+    reason = 'ok'
+    resp = {}
+
+    if request.method == 'GET':
+        search = request.args.get('search', '')
+        cdb = CeramicDB()
+        resp = cdb.search_models(search)
+
+    response = jsonify({'success': success, 'reason': reason, 'data': resp})
+
+    origin = request.headers.get('Origin', '')
+    origin_no_port = ':'.join(origin.split(':')[:2])
+
+    allow_origin_list = ['https://ceramic-explore-ben-razor.vercel.app', 'https://ceramic-explore.vercel.app', 'https://34.77.88.57']
+
+    if 'localhost' in request.base_url:
+        allow_origin_list = ['http://localhost']
+
+    if origin_no_port in allow_origin_list:
+        response.headers.add('Access-Control-Allow-Origin', origin)
+
+    return response, status
+
+@app.route("/api/get_model", methods=['GET'])
+def api_get_model():
     """
     API endpoint for searching data models
 

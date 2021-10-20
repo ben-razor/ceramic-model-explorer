@@ -10,6 +10,7 @@ export default function Home() {
 
   const [search, setSearch] = useState('');
   const [dataModels, setDataModels] = useState([]);
+  const [matchingDataModels, setMatchingDataModels] = useState([]);
 
   useEffect(() => {
 
@@ -19,16 +20,22 @@ export default function Home() {
           host = `http://localhost:8878`;
       }
 
+      console.log('start search')
       let r = await fetch(host + '/api/search_models?' + new URLSearchParams({
-        "search": search
+        'search': ''
       }))
 
       let j = await r.json();
 
       setDataModels(j.data);
+      setMatchingDataModels(j.data);
     })();
   }, [search]);
 
+  useEffect(() => {
+
+  }, [dataModels, search])
+  
   function getResultsUI(dataModels) {
     let resultsRows = [];
 
@@ -86,7 +93,7 @@ export default function Home() {
           <input type="text" value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         <div>
-          {getResultsUI(dataModels)}
+          {getResultsUI(matchingDataModels)}
         </div>
         <Container>
           <Row className="justify-content-md-between">
