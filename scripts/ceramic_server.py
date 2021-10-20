@@ -88,7 +88,7 @@ def api_rate():
     origin = request.headers.get('Origin', '')
     origin_no_port = ':'.join(origin.split(':')[:2])
 
-    allow_origin_list = ['https://ceramic-explore.vercel.app', 'https://34.77.88.57']
+    allow_origin_list = ['https://ceramic-explore-ben-razor.vercel.app', 'https://ceramic-explore.vercel.app', 'https://34.77.88.57']
 
     if 'localhost' in request.base_url:
         allow_origin_list = ['http://localhost']
@@ -215,7 +215,7 @@ def api_update_models():
     origin = request.headers.get('Origin', '')
     origin_no_port = ':'.join(origin.split(':')[:2])
 
-    allow_origin_list = ['https://ceramic-explore.vercel.app', 'https://34.77.88.57']
+    allow_origin_list = ['https://ceramic-explore-ben-razor.vercel.app', 'https://ceramic-explore.vercel.app', 'https://34.77.88.57']
 
     if 'localhost' in request.base_url:
         allow_origin_list = ['http://localhost']
@@ -253,7 +253,7 @@ def api_search_models():
     origin = request.headers.get('Origin', '')
     origin_no_port = ':'.join(origin.split(':')[:2])
 
-    allow_origin_list = ['https://ceramic-explore.vercel.app', 'https://34.77.88.57']
+    allow_origin_list = ['https://ceramic-explore-ben-razor.vercel.app', 'https://ceramic-explore.vercel.app', 'https://34.77.88.57']
 
     if 'localhost' in request.base_url:
         allow_origin_list = ['http://localhost']
