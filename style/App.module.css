@@ -281,7 +281,6 @@
     color: hsl(0deg, 0%, 10%);
     border-radius: 0.5em 0.5em 0 0;
     user-select: none;
-    cursor: default;
 }
 
 .csnTabActive {
@@ -413,5 +412,14 @@
     font-size: 1.4em;
 }
 .csnMarkdownViewer h3 {
+    font-size: 1.2em;
+}
+
+.csnSuggestionsPanel {
+    margin-top: 1em;
+}
+
+.csnSuggestionsTitle {
+    font-weight: bold;
     font-size: 1.2em;
 }

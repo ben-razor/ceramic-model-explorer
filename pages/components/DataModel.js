@@ -75,6 +75,20 @@ function DataModel(props) {
                 <div className={styles.csnTabContent}>
                     <div className={styles.csnTabModelInfo} style={{display: !selectedTab ? 'block' : 'none'}}>
                         {displayBasicModelInfo(selectedModel, modelInfo.version, modelInfo.author, modelInfo.tags)}
+                        <div className={styles.csnSuggestionsPanel}>
+                            <div className={styles.csnSuggestionsTitle}>
+                                Model Improvements 
+                            </div>
+                            <div className={styles.csnSuggestionsContent}>
+                                <p>Think that this model could be improved?</p>
+                                <p>Join the discussion at&nbsp;
+                                    <a href="https://github.com/ceramicstudio/datamodels/discussions/categories/models" target="_blank" rel="noreferrer">
+                                        DataModel Discussions
+                                    </a> 
+                                    .
+                                </p>
+                            </div>
+                        </div>
                     </div>
                     <div className={styles.csnTabSchema} style={{display: selectedTab === 'schema' ? 'block' : 'none'}}>
                         <div className={styles.csnSchemaViewer}>
