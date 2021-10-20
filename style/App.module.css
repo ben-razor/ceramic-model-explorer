@@ -284,8 +284,7 @@
 .dataModelResult {
     border: 1px solid darkorange;
     border-radius: 1em;
-    padding: 0.5em;
-    margin: 0.5em;
+    margin: 0.5em 0;
 }
 
 .dataModelResultRow {
@@ -298,4 +297,23 @@
 
 .dataModelResultValue {
     width: 80%;
+}
+
+.dataModelResultHeader {
+    background-color: hsl(13deg, 100%, 40%);
+    color: white;
+    border-radius: 0.9em 0.9em 0 0;
+    padding: 0.1em 1em;
+}
+
+.dataModelResultHeader h3 {
+    font-size: 1.4em;
+}
+
+.dataModelResultContent {
+    padding: 0.5em;
+}
+
+.dataModelHeaderName {
+
 }

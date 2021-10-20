@@ -20,7 +20,6 @@ export default function Home() {
           host = `http://localhost:8878`;
       }
 
-      console.log('start search')
       let r = await fetch(host + '/api/search_models?' + new URLSearchParams({
         'search': ''
       }))
@@ -30,11 +29,24 @@ export default function Home() {
       setDataModels(j.data);
       setMatchingDataModels(j.data);
     })();
-  }, [search]);
+  }, []);
 
   useEffect(() => {
+    if(dataModels) {
+      let _dataModels = [...dataModels];
+      let _matchingDataModels = _dataModels.filter(model => {
+        let id = model[0];
+        let name = model[0].split('-').map(x => x[0].toUpperCase() + x.slice(1)).join(' ');
+        let version = model[1];
+        let author = model[2];
+        let tags = model[3];
+        let readme = model[4];
 
-  }, [dataModels, search])
+        return id.includes(search) || name.includes(search) || tags.includes(search) || readme.includes(search);
+      })
+      setMatchingDataModels(_matchingDataModels);
+    }
+ }, [dataModels, search])
   
   function getResultsUI(dataModels) {
     let resultsRows = [];
@@ -47,16 +59,21 @@ export default function Home() {
       let tags = model[3];
       let github = `https://github.com/ceramicstudio/datamodels/tree/main/packages/${id}`;
       let npm = `@datamodels/${id}`;
+      let npmLink = `https://www.npmjs.com/package/@datamodels/${id}`;
 
       resultsRows.push(
         <div className={styles.dataModelResult}>
           <div className={styles.dataModelResultHeader}>
-            <h3>{name}</h3>
+            <div className={styles.dataModelHeaderName}>{name}</div>
           </div>
           <div className={styles.dataModelResultContent}>
             <div className={styles.dataModelResultRow}>
               <div className={styles.dataModelResultTitle}>NPM Package</div>
-              <div className={styles.dataModelResultValue}>{npm}</div>
+              <div className={styles.dataModelResultValue}>
+                <a href={npmLink} target="_blank" rel="noreferrer">
+                  {npm}
+                </a>
+              </div>
             </div>
             <div className={styles.dataModelResultRow}>
               <div className={styles.dataModelResultTitle}>Version</div>
