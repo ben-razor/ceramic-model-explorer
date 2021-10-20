@@ -125,9 +125,11 @@ class CeramicDB:
         c = self.con.cursor()
 
         c.execute("""
-            SELECT DISTINCT models.modelid, version, author, keywords, readme FROM models, schemas
-            WHERE models.modelid = schemas.modelid
+            SELECT models.modelid, version, author, keywords, readme, monthly_downloads, npm_score
+            FROM models, schemas, stats
+            WHERE (models.modelid = schemas.modelid AND models.modelid = stats.modelid and stats.modelid = schemas.modelid)
             AND models.modelid LIKE ? OR schemas.schema_json LIKE ? OR keywords LIKE ? OR author LIKE ? or readme LIKE ?
+            GROUP BY models.modelid
         """, (f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%'))
 
         rows = c.fetchall()
@@ -157,6 +159,15 @@ class CeramicDB:
             """, (modelid,)
             )
             row = c.fetchone()
+            return row
+
+    def get_all_stats(self):
+            c = self.con.cursor()
+            c.execute("""
+                SELECT modelid, monthly_downloads, npm_score, npm_quality, num_streams
+                FROM stats 
+            """)
+            row = c.fetchall()
             return row
 
     def add_stats(self, modelid, monthly_downloads, npm_score, npm_quality, num_streams):

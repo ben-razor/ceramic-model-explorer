@@ -377,7 +377,12 @@ def api_stats():
     if request.method == 'GET':
         model_id = request.args.get('modelid', '')
         cdb = CeramicDB()
-        resp = cdb.get_stats(model_id)
+        
+        if model_id:
+            resp = cdb.get_stats(model_id)
+        else:
+            resp = cdb.get_all_stats()
+
     elif request.method == 'POST':
         body = request.json
         modelid = body.get('modelid', '').strip()

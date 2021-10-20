@@ -21,6 +21,7 @@ export default function Home() {
   const [host, setHost] = useState('');
   const [search, setSearch] = useState('');
   const [dataModels, setDataModels] = useState([]);
+  const [modelStats, setModelStats] = useState({});
   const [matchingDataModels, setMatchingDataModels] = useState([]);
   const [modelRatings, setModelRatings] = useState({});
   const [ownRatings, setOwnRatings] = useState({});
@@ -54,6 +55,26 @@ export default function Home() {
 
         setDataModels(j.data);
         setMatchingDataModels(j.data);
+
+        let rStats = await fetch(host + '/api/stats');
+        let jStats = await rStats.json();
+        let stats = {}
+        if(jStats.success) {
+          for(let row of jStats.data) {
+            let modelid = row[0];
+            let monthly_downloads = row[1];
+            let npm_score = row[2];
+            let npm_quality = row[3];
+            let num_streams = row[4];
+            stats[modelid] = {
+              monthly_downloads: monthly_downloads,
+              npm_score: npm_score,
+              npm_quality: npm_quality,
+              num_streams: num_streams
+            }
+          }
+        }
+       setModelStats(stats);
       })();
     }
  }, [host]);
@@ -256,7 +277,7 @@ export default function Home() {
     e.preventDefault();
   }
 
-  function displayBasicModelInfo(modelid, version, author, tags) {
+  function displayBasicModelInfo(modelid, version, author, tags, monthly_downloads, npm_score) {
     let npm = `@datamodels/${modelid}`;
     let npmLink = `https://www.npmjs.com/package/@datamodels/${modelid}`;
     return <div>
@@ -280,6 +301,10 @@ export default function Home() {
         <div className={styles.dataModelResultTitle}>Tags</div>
         <div className={styles.dataModelResultValue}>{tags}</div>
       </div>
+      <div className={styles.dataModelResultRow}>
+        <div className={styles.dataModelResultTitle}><span className={styles.hoverTitle} title="Monthly Downloads">Downloads</span></div>
+        <div className={styles.dataModelResultValue}>{monthly_downloads}</div>
+      </div>
     </div>
   }
 
@@ -292,6 +317,12 @@ export default function Home() {
       let version = model[1];
       let author = model[2];
       let tags = model[3];
+      let monthly_downloads = 0;
+      let npm_score = 0;
+      if(modelStats[id]) {
+        monthly_downloads = modelStats[id].monthly_downloads || 0;
+        npm_score = modelStats[id].npm_score || 0;
+      }
       let github = `https://github.com/ceramicstudio/datamodels/tree/main/packages/${id}`;
 
       let ownRating = 0;
@@ -313,7 +344,7 @@ export default function Home() {
           </div>
           <div className={styles.dataModelResultContent}>
             <div className={styles.dataModelResultInfo}>
-              { displayBasicModelInfo(id, version, author, tags) }
+              { displayBasicModelInfo(id, version, author, tags, monthly_downloads, npm_score) }
             </div>
             <div className={styles.dataModelResultControls}>
               <button onClick={e => setSelectedModel(id)}>Select</button>

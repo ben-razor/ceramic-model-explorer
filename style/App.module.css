@@ -423,3 +423,8 @@
     font-weight: bold;
     font-size: 1.2em;
 }
+
+.hoverTitle {
+    border-bottom: 1px dashed grey;
+    cursor: help;
+}
