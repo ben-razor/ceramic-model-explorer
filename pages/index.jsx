@@ -110,14 +110,15 @@ export default function Home() {
     if(dataModels) {
       let _dataModels = [...dataModels];
       let _matchingDataModels = _dataModels.filter(model => {
-        let id = model[0];
-        let name = model[0].split('-').map(x => x[0].toUpperCase() + x.slice(1)).join(' ');
-        let version = model[1];
-        let author = model[2];
-        let tags = model[3];
-        let readme = model[4];
+        let id = model[0].toLowerCase();
+        let name = model[0].split('-').map(x => x[0].toUpperCase() + x.slice(1)).join(' ').toLowerCase();
+        let version = model[1].toLowerCase();
+        let author = model[2].toLowerCase();
+        let tags = model[3].toLowerCase();
+        let readme = model[4].toLowerCase();
+        let lcSearch = search.toLowerCase();
 
-        return id.includes(search) || name.includes(search) || tags.includes(search) || readme.includes(search);
+        return id.includes(lcSearch) || name.includes(lcSearch) || tags.includes(lcSearch) || readme.includes(lcSearch);
       })
       setMatchingDataModels(_matchingDataModels);
     }
@@ -250,16 +251,10 @@ export default function Home() {
         ownRating = ownRatingDetails.rating;
       }
 
-      let ratingStr = '0 ratings';
+      let ratingStr = '0';
 
       if(modelRatings[id]) {
         ratingStr = Math.round(modelRatings[id] / 10);
-        if(ratingStr === 1) {
-          ratingStr = ratingStr + ' star';
-        }
-        else {
-          ratingStr = ratingStr + ' stars';
-        }
       }
 
       resultsRows.push(
