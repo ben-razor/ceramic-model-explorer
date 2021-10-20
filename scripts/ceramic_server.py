@@ -54,7 +54,7 @@ def api_rate():
 
         userid = body.get('userid', '').strip()
         modelid = body.get('modelid', '').strip()
-        rating_str = body.get('rating', '').strip()
+        rating_str = body.get('rating')
         comment = body.get('comment', '').strip()
 
         if not userid:
@@ -78,10 +78,12 @@ def api_rate():
                 cdb = CeramicDB()
                 try:
                     cdb.rate(userid, modelid, rating, comment)
+                    ratings = cdb.get_user_ratings(userid)
+                    resp = ratings
                 except Exception as e:
                     success = False
                     status = 400
-                    reason = 'error-running-query'
+                    reason = 'error-running-query: ' + str(e)
 
     response = jsonify({'success': success, 'reason': reason, 'data': resp})
 

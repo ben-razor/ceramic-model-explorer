@@ -11,8 +11,14 @@
 }
 
 .csnTopBar {
+    position: relative;
     display: flex;
     padding: 0.5em;
+    justify-content: space-between;
+}
+
+.csnHeaderControls {
+
 }
 
 .csnLogoPanel {

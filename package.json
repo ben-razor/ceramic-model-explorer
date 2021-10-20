@@ -6,7 +6,12 @@
     "start": "next start"
   },
   "dependencies": {
+    "@3id/connect": "^0.2.5",
+    "@ceramicnetwork/3id-did-resolver": "^1.4.4",
+    "@ceramicnetwork/http-client": "^1.4.0",
+    "@ceramicnetwork/stream-tile": "^1.3.2",
     "bootstrap": "^4.4.1",
+    "dids": "^2.4.0",
     "next": "latest",
     "react": "^17.0.2",
     "react-bootstrap": "^1.0.1",

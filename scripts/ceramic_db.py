@@ -4,7 +4,8 @@ import os
 
 create_ratings_sql = """
     CREATE TABLE IF NOT EXISTS ratings (
-        userid text NOT NULL PRIMARY KEY, 
+        ratings_id integer PRIMARY KEY AUTOINCREMENT,
+        userid text NOT NULL, 
         modelid text, 
         rating int,
         comment text,
@@ -32,6 +33,10 @@ create_schemas_sql = """
     )
 """
 
+recreate_ratings_sql = """
+    DROP TABLE IF EXISTS ratings
+"""
+
 class CeramicDB:
     def __init__(self, db_name='ceramic_models.db'):
         self.con = sqlite3.connect(db_name)
@@ -49,7 +54,7 @@ class CeramicDB:
         c = self.con.cursor()
 
         c.execute("""
-            INSERT INTO ratings(userid, modelid, rating, comment)
+            INSERT OR REPLACE INTO ratings(userid, modelid, rating, comment)
             VALUES (?, ?, ?, ?)""",
             (userid, modelid, rating, comment)
         )
@@ -57,7 +62,7 @@ class CeramicDB:
 
     def get_user_ratings(self, userid):
         c = self.con.cursor()
-        c.execute("SELECT * FROM ratings WHERE userid = ?", (userid,))
+        c.execute("SELECT userid, modelid, rating, comment FROM ratings WHERE userid = ?", (userid,))
         rows = c.fetchall()
         return rows
 

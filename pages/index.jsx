@@ -6,6 +6,13 @@ import ApiGithub from '../lib/ApiGithub'
 import { isLocal } from '../lib/helpersHTML'
 import styles from '../style/App.module.css'
 import { ToastProvider, useToasts } from 'react-toast-notifications';
+import CeramicClient from '@ceramicnetwork/http-client';
+import ThreeIdResolver from '@ceramicnetwork/3id-did-resolver';
+import { ThreeIdConnect,  EthereumAuthProvider } from '@3id/connect'
+import { TileDocument } from '@ceramicnetwork/stream-tile'
+import { DID } from 'dids'
+const API_URL = 'https://ceramic-clay.3boxlabs.com';
+const TOAST_TIMEOUT = 5000;
 
 export default function Home() {
 
@@ -14,8 +21,12 @@ export default function Home() {
   const [dataModels, setDataModels] = useState([]);
   const [matchingDataModels, setMatchingDataModels] = useState([]);
   const [ownRatings, setOwnRatings] = useState({});
-  const [userID, setUserID] = useState('');
+  const [connecting, setConnecting] = useState(false);
   const { addToast } = useToasts();
+
+  const [ceramic, setCeramic] = useState();
+  const [ethAddresses, setEthAddresses] = useState();
+  const [ethereum, setEthereum] = useState();
 
   useEffect(() => {
     let _host = 'https://benrazor.net:8878';
@@ -43,18 +54,57 @@ export default function Home() {
  }, [host]);
 
   useEffect(() => {
-    if(userID && dataModels) {
+    if(ceramic && dataModels) {
+      let userID = ceramic.did.id;
+
       (async() => {
         let r = await fetch(host + '/api/rate?' + new URLSearchParams({
           'userid': userID 
         }))
 
         let j = await r.json();
-
+        if(j.success) {
+          setOwnRatings(ratingTuplesToObj(j.data));
+        }
+        else {
+          console.log(j.reason);
+        }
       })();
     }
-  }, [userID, dataModels]);
+  }, [ceramic, dataModels]);
 
+  useEffect(() => {
+    if(ethereum && ethAddresses && !ceramic) {
+      (async () => {
+        try {
+          const newCeramic = new CeramicClient(API_URL);
+
+          const resolver = {
+            ...ThreeIdResolver.getResolver(newCeramic),
+          }
+          const did = new DID({ resolver })
+          newCeramic.did = did;
+          const threeIdConnect = new ThreeIdConnect()
+          const authProvider = new EthereumAuthProvider(ethereum, ethAddresses[0]);
+          await threeIdConnect.connect(authProvider)
+
+          const provider = await threeIdConnect.getDidProvider();
+          newCeramic.did.setProvider(provider);
+          await newCeramic.did.authenticate();
+
+          setCeramic(newCeramic);
+          setConnecting(false);
+        }
+        catch(e) {
+          console.log(e);
+        }
+        finally {
+          setConnecting(false);
+        }
+      })();
+    }
+  }, [ethereum, ethAddresses, ceramic]);
+  
   useEffect(() => {
     if(dataModels) {
       let _dataModels = [...dataModels];
@@ -73,11 +123,92 @@ export default function Home() {
   }, [dataModels, search])
   
   function rateModel(e, modelid) {
-    addToast('Superstar!', { 
-      appearance: 'success',
+    if(ceramic) {
+      toast('Superstar!');
+
+      let userID = ceramic.did.id;
+      let rating = 10;
+
+      if(ownRatings[modelid] && ownRatings[modelid].rating) {
+        rating = 0;
+      }
+
+      (async() => {
+        let r = await fetch(host + '/api/rate', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            userid: userID,
+            modelid: modelid,
+            rating: rating,
+            comment: ''
+          })
+        });
+
+        let j = await r.json();
+        if(j.success) {
+          setOwnRatings(ratingTuplesToObj(j.data));
+        }
+        else {
+          console.log(j.reason);
+        }
+      })();
+    }
+    else {
+      toast('Connect to rate models');
+    }
+  }
+
+  function ratingTuplesToObj(ratingTuples) {
+    let ratingObj = {};
+    for(let t of ratingTuples) {
+      let userid = t[0];
+      let modelid = t[1];
+      let rating = t[2];
+      let comment = t[3];
+      
+      ratingObj[modelid] = {
+        userid: userid,
+        rating: rating,
+        comment: comment
+      }
+    }
+
+    return ratingObj;
+  }
+
+  function toast(message, type='info') {
+    addToast(message, { 
+      appearance: type,
       autoDismiss: true,
-      autoDismissTimeout: 3000
+      autoDismissTimeout: TOAST_TIMEOUT
     });
+  }
+
+  function connectAccount(e) { 
+    if(window.ethereum) {
+      setEthereum(window.ethereum);
+      (async() => {
+        try {
+          setConnecting(true);
+          const addresses = await window.ethereum.request({ method: 'eth_requestAccounts'})
+          if(addresses) {
+            setEthAddresses(addresses);
+          }
+        }
+        catch(e) { 
+          console.log(e);
+          setConnecting(false);
+        }
+      })();
+    }
+    else {
+      toast('You need Ethereum. Try MetaMask!', 'warning');
+    }
+    e.preventDefault();
   }
 
   function getResultsUI(dataModels) {
@@ -93,7 +224,11 @@ export default function Home() {
       let npm = `@datamodels/${id}`;
       let npmLink = `https://www.npmjs.com/package/@datamodels/${id}`;
 
-      let ownRating = ownRatings[id];
+      let ownRating = 0;
+      let ownRatingDetails = ownRatings[id];
+      if(ownRatingDetails) {
+        ownRating = ownRatingDetails.rating;
+      }
       let ratingStr = '0 ratings';
 
       resultsRows.push(
@@ -127,8 +262,13 @@ export default function Home() {
             <div className={styles.dataModelResultControls}>
               <button>Select</button>
               <div className={styles.dataModelResultRatingPanel}>
-                <Image className={styles.dataModelRatingStar} src="/hp_gold_star.svg" onClick={e => {rateModel(e, id)}}
-                       alt="Rate data model" width="30" height="30" />
+                { ownRating ?
+                  <Image className={styles.dataModelRatingStar} src="/hp_gold_star.svg" onClick={e => {rateModel(e, id)}}
+                         alt="Rate data model" width="30" height="30" /> :
+
+                  <Image className={styles.dataModelRatingStar} src="/hp_star_no_fill.svg" onClick={e => {rateModel(e, id)}}
+                         alt="Rate data model" width="30" height="30" />
+                }
                 {ratingStr}
               </div>
             </div>
@@ -141,17 +281,30 @@ export default function Home() {
   }
 
   return (
-      <Container className="md-container">
-        <Head>
-          <title>Ceramic Data Model Explorer</title>
-          <link rel="icon" href="/favicon-32x32.png" />
-        </Head>
-        <Container>
-          <h2>
-            <Image src="explorer-192.png" width="60" />&nbsp;
-            Ceramic Data Model Explorer
-          </h2>
+    <div>
+      <Head>
+        <title>Ceramic Data Model Explorer</title>
+        <link rel="icon" href="/favicon-32x32.png" />
+      </Head>
+      <div className={styles.csnTopBar}>
+        <h2>
+          <Image src="explorer-192.png" width="60" />&nbsp;
+          Ceramic Data Model Explorer
+        </h2>
+        <div className={styles.csnHeaderControls}>
+          { ceramic ?
+            <button onClick={e => connectAccount(e)} disabled>Connected</button> :
+            (
+              !connecting ?
+                <button onClick={e => connectAccount(e)}>Connect</button> :
+                <button onClick={e => connectAccount(e)}>Connecting...</button>
+            )
+          }
+        </div>
+      </div>
 
+      <Container className="md-container">
+        <Container>
           <div>
             <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search for data model..." />
           </div>
@@ -163,5 +316,6 @@ export default function Home() {
           </footer>
         </Container>
       </Container>
+    </div>
   )
 }
