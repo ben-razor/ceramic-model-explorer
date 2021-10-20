@@ -5,6 +5,8 @@ import { Image } from 'react-bootstrap'
 import ApiGithub from '../lib/ApiGithub'
 import { isLocal } from '../lib/helpersHTML'
 import styles from '../style/App.module.css'
+import { ToastProvider, useToasts } from 'react-toast-notifications';
+
 export default function Home() {
 
   const [host, setHost] = useState('');
@@ -13,6 +15,7 @@ export default function Home() {
   const [matchingDataModels, setMatchingDataModels] = useState([]);
   const [ownRatings, setOwnRatings] = useState({});
   const [userID, setUserID] = useState('');
+  const { addToast } = useToasts();
 
   useEffect(() => {
     let _host = 'https://benrazor.net:8878';
@@ -24,21 +27,23 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    (async() => {
+    if(host) {
+      (async() => {
 
-      let r = await fetch(host + '/api/search_models?' + new URLSearchParams({
-        'search': ''
-      }))
+        let r = await fetch(host + '/api/search_models?' + new URLSearchParams({
+          'search': ''
+        }))
 
-      let j = await r.json();
+        let j = await r.json();
 
-      setDataModels(j.data);
-      setMatchingDataModels(j.data);
-    })();
-  }, [host]);
+        setDataModels(j.data);
+        setMatchingDataModels(j.data);
+      })();
+    }
+ }, [host]);
 
   useEffect(() => {
-    if(userID) {
+    if(userID && dataModels) {
       (async() => {
         let r = await fetch(host + '/api/rate?' + new URLSearchParams({
           'userid': userID 
@@ -65,8 +70,16 @@ export default function Home() {
       })
       setMatchingDataModels(_matchingDataModels);
     }
- }, [dataModels, search])
+  }, [dataModels, search])
   
+  function rateModel(e, modelid) {
+    addToast('Superstar!', { 
+      appearance: 'success',
+      autoDismiss: true,
+      autoDismissTimeout: 3000
+    });
+  }
+
   function getResultsUI(dataModels) {
     let resultsRows = [];
 
@@ -84,7 +97,7 @@ export default function Home() {
       let ratingStr = '0 ratings';
 
       resultsRows.push(
-        <div className={styles.dataModelResult}>
+        <div className={styles.dataModelResult} key={id}>
           <div className={styles.dataModelResultHeader}>
             <div className={styles.dataModelHeaderName}>{name}</div>
           </div>
@@ -114,7 +127,8 @@ export default function Home() {
             <div className={styles.dataModelResultControls}>
               <button>Select</button>
               <div className={styles.dataModelResultRatingPanel}>
-                <Image className={styles.dataModelRatingStar} src="/hp_gold_star.svg" alt="Rate data model" width="30" height="30" />
+                <Image className={styles.dataModelRatingStar} src="/hp_gold_star.svg" onClick={e => {rateModel(e, id)}}
+                       alt="Rate data model" width="30" height="30" />
                 {ratingStr}
               </div>
             </div>
@@ -127,83 +141,27 @@ export default function Home() {
   }
 
   return (
-    <Container className="md-container">
-      <Head>
-        <title>Ceramic Data Model Explorer</title>
-        <link rel="icon" href="/favicon-32x32.png" />
-      </Head>
-      <Container>
-        <h2>
-          <Image src="explorer-192.png" width="60" />&nbsp;
-          Ceramic Data Model Explorer
-        </h2>
-        <div>
-          <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search for data model..." />
-        </div>
-        <div>
-          {getResultsUI(matchingDataModels)}
-        </div>
+      <Container className="md-container">
+        <Head>
+          <title>Ceramic Data Model Explorer</title>
+          <link rel="icon" href="/favicon-32x32.png" />
+        </Head>
         <Container>
-          <Row className="justify-content-md-between">
-            <Card className="sml-card">
-              <Card.Body>
-                <Card.Title>Documentation</Card.Title>
-                <Card.Text>
-                  Find in-depth information about Next.js features and API.
-                </Card.Text>
-                <Button variant="primary" href="https://nextjs.org/docs">
-                  More &rarr;
-                </Button>
-              </Card.Body>
-            </Card>
-            <Card className="sml-card">
-              <Card.Body>
-                <Card.Title>Learn</Card.Title>
-                <Card.Text>
-                  Learn about Next.js in an interactive course with quizzes!
-                </Card.Text>
-                <Button variant="primary" href="https://nextjs.org/learn">
-                  More &rarr;
-                </Button>
-              </Card.Body>
-            </Card>
-          </Row>
-          <Row className="justify-content-md-between">
-            <Card className="sml-card">
-              <Card.Body>
-                <Card.Title>Examples</Card.Title>
-                <Card.Text>
-                  Discover and deploy boilerplate example Next.js projects.
-                </Card.Text>
-                <Button
-                  variant="primary"
-                  href="https://github.com/vercel/next.js/tree/master/examples"
-                >
-                  More &rarr;
-                </Button>
-              </Card.Body>
-            </Card>
-            <Card className="sml-card">
-              <Card.Body>
-                <Card.Title>Deploy</Card.Title>
-                <Card.Text>
-                  Instantly deploy your Next.js site to a public URL with
-                  Vercel.
-                </Card.Text>
-                <Button
-                  variant="primary"
-                  href="https://vercel.com/new?utm_source=github&utm_medium=example&utm_campaign=next-example"
-                >
-                  More &rarr;
-                </Button>
-              </Card.Body>
-            </Card>
-          </Row>
+          <h2>
+            <Image src="explorer-192.png" width="60" />&nbsp;
+            Ceramic Data Model Explorer
+          </h2>
+
+          <div>
+            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search for data model..." />
+          </div>
+          <div>
+            {getResultsUI(matchingDataModels)}
+          </div>
+
+          <footer className="cntr-footer">
+          </footer>
         </Container>
       </Container>
-
-      <footer className="cntr-footer">
-      </footer>
-    </Container>
   )
 }
