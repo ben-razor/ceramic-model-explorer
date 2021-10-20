@@ -26,6 +26,7 @@ export default function Home() {
   const [ownRatings, setOwnRatings] = useState({});
   const [connecting, setConnecting] = useState(false);
   const [searchOrder, setSearchOrder] = useState('')
+  const [selectedModel, setSelectedModel] = useState('');
   const { addToast } = useToasts();
 
   const [ceramic, setCeramic] = useState();
@@ -162,6 +163,10 @@ export default function Home() {
     }
   }, [dataModels, ownRatings, host])
   
+  useEffect(() => {
+
+  }, [selectedModel]);
+
   function rateModel(e, modelid) {
     if(ceramic) {
       toast('Superstar!');
@@ -305,7 +310,7 @@ export default function Home() {
               </div>
             </div>
             <div className={styles.dataModelResultControls}>
-              <button>Select</button>
+              <button onClick={e => setSelectedModel(id)}>Select</button>
               <div className={styles.dataModelResultRatingPanel}>
                 { ownRating ?
                   <Image className={styles.dataModelRatingStar} src="/hp_gold_star.svg" onClick={e => {rateModel(e, id)}}
@@ -349,25 +354,28 @@ export default function Home() {
       </div>
 
       <Container className="md-container">
-        <Container>
-          <div className={styles.csnBasicSearchBar}>
-            <input className={styles.csnSearchInput} type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search for data model..." />
-            <select className={styles.csnSearchOrderSelect} onChange={e => setSearchOrder(e.target.value)}>
-              <option value="">Oldest</option>
-              <option value="newest">Newest</option>
-              <option value="highest-rated">Highest Rated</option>
-            </select>
-          </div>
+        {!selectedModel &&
           <div>
-            {getResultsUI(matchingDataModels)}
+            <div className={styles.csnBasicSearchBar}>
+              <input className={styles.csnSearchInput} type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search for data model..." />
+              <select className={styles.csnSearchOrderSelect} onChange={e => setSearchOrder(e.target.value)}>
+                <option value="">Classics</option>
+                <option value="newest">Newest</option>
+                <option value="highest-rated">Highest Rated</option>
+              </select>
+            </div>
+            <div>
+              {getResultsUI(matchingDataModels)}
+            </div>
           </div>
+        }
 
-          <Applications />
-          <DataModel />
+        {selectedModel && 
+          <DataModel setSelectedModel={setSelectedModel} selectedModel={selectedModel} />
+        }
 
-          <footer className="cntr-footer">
-          </footer>
-        </Container>
+        <footer className="cntr-footer">
+        </footer>
       </Container>
     </div>
   )
