@@ -10,6 +10,8 @@ import CeramicClient from '@ceramicnetwork/http-client';
 import ThreeIdResolver from '@ceramicnetwork/3id-did-resolver';
 import { ThreeIdConnect,  EthereumAuthProvider } from '@3id/connect'
 import { TileDocument } from '@ceramicnetwork/stream-tile'
+import Applications from './components/Applications'
+import DataModel from './components/DataModel'
 import { DID } from 'dids'
 const API_URL = 'https://ceramic-clay.3boxlabs.com';
 const TOAST_TIMEOUT = 5000;
@@ -359,6 +361,9 @@ export default function Home() {
           <div>
             {getResultsUI(matchingDataModels)}
           </div>
+
+          <Applications />
+          <DataModel />
 
           <footer className="cntr-footer">
           </footer>
