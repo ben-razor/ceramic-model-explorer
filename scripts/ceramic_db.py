@@ -33,6 +33,17 @@ create_schemas_sql = """
     )
 """
 
+create_stats_sql = """
+    CREATE TABLE IF NOT EXISTS stats (
+        modelid text NOT NULL PRIMARY KEY,
+        monthly_downloads int,
+        npm_score real,
+        npm_quality real,
+        num_streams int,
+        last_updated text
+    )
+"""
+
 recreate_ratings_sql = """
     DROP TABLE IF EXISTS ratings
 """
@@ -45,6 +56,7 @@ class CeramicDB:
         c.execute(create_ratings_sql)
         c.execute(create_models_sql)
         c.execute(create_schemas_sql)
+        c.execute(create_stats_sql)
         self.con.commit()
     
     def __del__(self):
@@ -135,3 +147,25 @@ class CeramicDB:
         rows = c.fetchall()
 
         return rows
+
+    def get_stats(self, modelid):
+            c = self.con.cursor()
+            c.execute("""
+                SELECT modelid, monthly_downloads, npm_score, npm_quality, num_streams
+                FROM stats 
+                WHERE modelid = ?
+            """, (modelid,)
+            )
+            row = c.fetchone()
+            return row
+
+    def add_stats(self, modelid, monthly_downloads, npm_score, npm_quality, num_streams):
+        c = self.con.cursor()
+
+        c.execute("""
+            INSERT OR REPLACE INTO stats(modelid, monthly_downloads, npm_score, npm_quality, num_streams, last_updated)
+            VALUES (?, ?, ?, ?, ?, datetime('now'))""",
+            (modelid, monthly_downloads, npm_score, npm_quality, num_streams)
+        )
+        self.con.commit()
+

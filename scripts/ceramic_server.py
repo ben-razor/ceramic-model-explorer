@@ -266,6 +266,20 @@ def api_search_models():
 
     return response, status
 
+def add_cors_headers(request, response):
+    origin = request.headers.get('Origin', '')
+    origin_no_port = ':'.join(origin.split(':')[:2])
+
+    allow_origin_list = ['https://ceramic-explore-ben-razor.vercel.app', 'https://ceramic-explore.vercel.app', 'https://34.77.88.57']
+
+    if 'localhost' in request.base_url:
+        allow_origin_list = ['http://localhost']
+
+    if origin_no_port in allow_origin_list:
+        response.headers.add('Access-Control-Allow-Origin', origin)
+    
+    return response
+
 @app.route("/api/get_model", methods=['GET'])
 def api_get_model():
     """
@@ -339,6 +353,50 @@ def api_get_model_ratings():
         response.headers.add('Access-Control-Allow-Origin', origin)
 
     return response, status
+
+
+@app.route("/api/stats", methods=['GET', 'POST'])
+def api_stats():
+    """
+    API endpoint for getting stats for a model
+
+    returns:
+        {
+          'success': ,     // boolean
+          'reason':        // An string error code like 'error-syntax-error'
+          'resp': {
+          }      
+        }
+    """
+    status = 200
+    success = True
+    reason = 'ok'
+    resp = {}
+
+    if request.method == 'GET':
+        model_id = request.args.get('modelid', '')
+        cdb = CeramicDB()
+        resp = cdb.get_stats(model_id)
+    elif request.method == 'POST':
+        body = request.json
+        modelid = body.get('modelid', '').strip()
+        monthly_downloads = body.get('monthly_downloads')
+        npm_score = body.get('npm_score')
+        npm_quality = body.get('npm_quality')
+        num_streams = body.get('num_streams')
+
+        cdb = CeramicDB()
+        prev_stats = cdb.get_stats(modelid)
+        resp = prev_stats
+        # cdb.add_stats(modelid, monthly_downloads, npm_score, npm_quality, num_streams)
+
+
+    response = jsonify({'success': success, 'reason': reason, 'data': resp})
+    response = add_cors_headers(request, response)
+
+    return response, status
+
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8878)
