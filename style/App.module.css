@@ -280,6 +280,8 @@
     background-color: hsl(0deg, 20%, 70%);
     color: hsl(0deg, 0%, 10%);
     border-radius: 0.5em 0.5em 0 0;
+    user-select: none;
+    cursor: default;
 }
 
 .csnTabActive {
@@ -399,4 +401,17 @@
     height: 80vh;
     overflow-y: auto;
     padding: 0.5em;
+}
+
+.csnMarkdownViewer {
+}
+
+.csnMarkdownViewer h1 {
+    font-size: 1.6em;
+}
+.csnMarkdownViewer h2 {
+    font-size: 1.4em;
+}
+.csnMarkdownViewer h3 {
+    font-size: 1.2em;
 }

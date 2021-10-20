@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import styles from '../../style/App.module.css'
+import ReactMarkdown from 'react-markdown'
 
 function DataModel(props) {
     let selectedModel = props.selectedModel;
@@ -49,7 +50,7 @@ function DataModel(props) {
     function prettyPrintSchema(schema) {
         let content = 'Schema not loaded';
         try {
-            content = JSON.stringify(JSON.parse(modelInfo.schema), null, 2)
+            content = JSON.stringify(JSON.parse(schema), null, 2)
         }
         catch(e) {
             console.log(e);
@@ -81,8 +82,12 @@ function DataModel(props) {
                         </div>
                     </div>
                     <div className={styles.csnTabSchema} style={{display: selectedTab === 'readme' ? 'block' : 'none'}}>
-                        <div className={styles.csnSchemaViewer}>
-                            { modelInfo.readme_md && modelInfo.readme_md}
+                        <div className={styles.csnMarkdownViewer}>
+                            { modelInfo.readme_md && 
+                                <ReactMarkdown>
+                                    { modelInfo.readme_md }
+                                </ReactMarkdown>
+                            }
                         </div>
                     </div>
                     <div className={styles.csnTabSchema} style={{display: selectedTab === 'package' ? 'block' : 'none'}}>
