@@ -66,6 +66,16 @@ class CeramicDB:
         rows = c.fetchall()
         return rows
 
+    def get_ratings(self):
+        c = self.con.cursor()
+        c.execute("""
+            SELECT modelid, SUM(rating) AS total 
+            FROM ratings
+            GROUP BY modelid
+        """)
+        rows = c.fetchall()
+        return rows
+
     def add_model(self, modelid, version, author, keywords, readme, package_json, schemas):
         c = self.con.cursor()
 

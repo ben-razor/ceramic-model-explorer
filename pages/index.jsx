@@ -20,6 +20,7 @@ export default function Home() {
   const [search, setSearch] = useState('');
   const [dataModels, setDataModels] = useState([]);
   const [matchingDataModels, setMatchingDataModels] = useState([]);
+  const [modelRatings, setModelRatings] = useState({});
   const [ownRatings, setOwnRatings] = useState({});
   const [connecting, setConnecting] = useState(false);
   const { addToast } = useToasts();
@@ -121,6 +122,25 @@ export default function Home() {
       setMatchingDataModels(_matchingDataModels);
     }
   }, [dataModels, search])
+  
+  useEffect(() => {
+    if(dataModels && host) {
+      (async() => {
+        let r = await fetch(host + '/api/get_model_ratings');
+        let j = await r.json();
+        if(j.success) {
+
+          let _modelRatings = {};
+          for(let ratingInfo of j.data) {
+            let modelid = ratingInfo[0];
+            let rating = ratingInfo[1];
+            _modelRatings[modelid] = rating;
+          }
+          setModelRatings(_modelRatings);
+        }
+      })();
+    }
+  }, [dataModels, ownRatings, host])
   
   function rateModel(e, modelid) {
     if(ceramic) {
@@ -229,7 +249,18 @@ export default function Home() {
       if(ownRatingDetails) {
         ownRating = ownRatingDetails.rating;
       }
+
       let ratingStr = '0 ratings';
+
+      if(modelRatings[id]) {
+        ratingStr = Math.round(modelRatings[id] / 10);
+        if(ratingStr === 1) {
+          ratingStr = ratingStr + ' star';
+        }
+        else {
+          ratingStr = ratingStr + ' stars';
+        }
+      }
 
       resultsRows.push(
         <div className={styles.dataModelResult} key={id}>
@@ -293,11 +324,11 @@ export default function Home() {
         </h2>
         <div className={styles.csnHeaderControls}>
           { ceramic ?
-            <button onClick={e => connectAccount(e)} disabled>Connected</button> :
+            <button className={styles.csnConnectButton} onClick={e => connectAccount(e)} disabled>Connected</button> :
             (
               !connecting ?
-                <button onClick={e => connectAccount(e)}>Connect</button> :
-                <button onClick={e => connectAccount(e)}>Connecting...</button>
+                <button className={styles.csnConnectButton} onClick={e => connectAccount(e)}>Connect</button> :
+                <button className={styles.csnConnectButton} onClick={e => connectAccount(e)}>Connecting...</button>
             )
           }
         </div>
