@@ -11,7 +11,7 @@ function DataModel(props) {
 
     let name = selectedModel.split('-').map(x => x[0].toUpperCase() + x.slice(1)).join(' ');
 
-    const [selectedTab, setSelectedTab] = useState('');
+    const [selectedTab, setSelectedTab] = useState('readme');
     const [modelInfo, setModelInfo] = useState({});
 
     useEffect(() => {
@@ -67,8 +67,8 @@ function DataModel(props) {
             <div className={styles.dataModelSelectedContent}>
 
                 <div className={styles.csnTabs}>
-                    <div onClick={e => setSelectedTab('')} className={styles.csnTab + ' ' + (!selectedTab && styles.csnTabActive)}>Model</div>
                     <div onClick={e => setSelectedTab('readme')} className={styles.csnTab + ' ' + (selectedTab === 'readme' && styles.csnTabActive)}>README</div>
+                    <div onClick={e => setSelectedTab('')} className={styles.csnTab + ' ' + (!selectedTab && styles.csnTabActive)}>Model</div>
                     <div onClick={e => setSelectedTab('schema')} className={styles.csnTab + ' ' + (selectedTab === 'schema' && styles.csnTabActive)}>Schema</div>
                     <div onClick={e => setSelectedTab('package')} className={styles.csnTab + ' ' + (selectedTab === 'package' && styles.csnTabActive)}>package.json</div>
                 </div>

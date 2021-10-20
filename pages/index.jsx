@@ -363,7 +363,7 @@ export default function Home() {
         {!selectedModel &&
           <div>
             <div className={styles.csnBasicSearchBar}>
-              <input className={styles.csnSearchInput} type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search for data model..." />
+              <input className={styles.csnSearchInput} type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search for a data model..." />
               <select className={styles.csnSearchOrderSelect} onChange={e => setSearchOrder(e.target.value)}>
                 <option value="">Classics</option>
                 <option value="newest">Newest</option>
