@@ -129,7 +129,8 @@ class CeramicDB:
             SELECT models.modelid, version, author, keywords, readme, package_json, schema_path, schema_name, schema_json
             FROM models, schemas
             WHERE models.modelid = schemas.modelid
-        """)
+            AND models.modelid = ?
+        """, (modelid,))
 
         rows = c.fetchall()
 

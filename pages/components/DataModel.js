@@ -5,26 +5,92 @@ import styles from '../../style/App.module.css'
 function DataModel(props) {
     let selectedModel = props.selectedModel;
     let setSelectedModel = props.setSelectedModel;
+    let displayBasicModelInfo = props.displayBasicModelInfo;
+    let host = props.host;
+
+    let name = selectedModel.split('-').map(x => x[0].toUpperCase() + x.slice(1)).join(' ');
 
     const [selectedTab, setSelectedTab] = useState('');
+    const [modelInfo, setModelInfo] = useState({});
+
+    useEffect(() => {
+        if(selectedModel) {
+            (async() => {
+                let r = await fetch(host + '/api/get_model?' + new URLSearchParams({
+                    'modelid': selectedModel
+                }))
+
+                let j = await r.json();
+                // TODO: Only get one schema at the moment
+                setModelInfo(modelTupleToObj(j.data[0]));
+            })()
+            
+        }
+    }, [selectedModel]);
+
+    function modelTupleToObj(modelTuple) {
+        return {
+            'model_id': modelTuple[0],
+            'version': modelTuple[1],
+            'author': modelTuple[2],
+            'tags': modelTuple[3],
+            'readme_md': modelTuple[4],
+            'package_json': modelTuple[5],
+            'schema_path': modelTuple[6],
+            'schema_name': modelTuple[7],
+            'schema': modelTuple[8]
+        }
+    }
 
     function goBack() {
         setSelectedModel('');
     }
 
-    return <div className={styles.dataModelPanel}>
-        <button onClick={e => goBack()}>&lArr; Back</button>
+    function prettyPrintSchema(schema) {
+        let content = 'Schema not loaded';
+        try {
+            content = JSON.stringify(JSON.parse(modelInfo.schema), null, 2)
+        }
+        catch(e) {
+            console.log(e);
+        }
+        return content;
+    }
 
-        <div className={styles.csnTabs}>
-            <div onClick={e => setSelectedTab('')} className={styles.csnTab + ' ' + (!selectedTab && styles.csnTabActive)}>Model</div>
-            <div onClick={e => setSelectedTab('schema')} className={styles.csnTab + ' ' + (selectedTab === 'schema' && styles.csnTabActive)}>Schema</div>
-        </div>
-        <div class={styles.csnTabContent}>
-            <div class={styles.csnTabModelInfo} style={{display: !selectedTab ? 'block' : 'none'}}>
-                Model info
+    return <div className={styles.dataModelPanel}>
+                <button onClick={e => goBack()}>&lArr; Back</button>
+        <div className={styles.dataModelResult}>
+            <div className={styles.dataModelResultHeader}>
+            <div className={styles.dataModelHeaderName}>{name}</div>
             </div>
-            <div class={styles.csnTabSchema} style={{display: selectedTab === 'schema' ? 'block' : 'none'}}>
-                Schema 
+            <div className={styles.dataModelSelectedContent}>
+
+                <div className={styles.csnTabs}>
+                    <div onClick={e => setSelectedTab('')} className={styles.csnTab + ' ' + (!selectedTab && styles.csnTabActive)}>Model</div>
+                    <div onClick={e => setSelectedTab('readme')} className={styles.csnTab + ' ' + (selectedTab === 'readme' && styles.csnTabActive)}>README</div>
+                    <div onClick={e => setSelectedTab('schema')} className={styles.csnTab + ' ' + (selectedTab === 'schema' && styles.csnTabActive)}>Schema</div>
+                    <div onClick={e => setSelectedTab('package')} className={styles.csnTab + ' ' + (selectedTab === 'package' && styles.csnTabActive)}>package.json</div>
+                </div>
+                <div className={styles.csnTabContent}>
+                    <div className={styles.csnTabModelInfo} style={{display: !selectedTab ? 'block' : 'none'}}>
+                        {displayBasicModelInfo(selectedModel, modelInfo.version, modelInfo.author, modelInfo.tags)}
+                    </div>
+                    <div className={styles.csnTabSchema} style={{display: selectedTab === 'schema' ? 'block' : 'none'}}>
+                        <div className={styles.csnSchemaViewer}>
+                            { modelInfo.schema && prettyPrintSchema(modelInfo.schema)}
+                        </div>
+                    </div>
+                    <div className={styles.csnTabSchema} style={{display: selectedTab === 'readme' ? 'block' : 'none'}}>
+                        <div className={styles.csnSchemaViewer}>
+                            { modelInfo.readme_md && modelInfo.readme_md}
+                        </div>
+                    </div>
+                    <div className={styles.csnTabSchema} style={{display: selectedTab === 'package' ? 'block' : 'none'}}>
+                        <div className={styles.csnSchemaViewer}>
+                            { modelInfo.package_json && prettyPrintSchema(modelInfo.package_json)}
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

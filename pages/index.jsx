@@ -256,6 +256,33 @@ export default function Home() {
     e.preventDefault();
   }
 
+  function displayBasicModelInfo(modelid, version, author, tags) {
+    let npm = `@datamodels/${modelid}`;
+    let npmLink = `https://www.npmjs.com/package/@datamodels/${modelid}`;
+    return <div>
+      <div className={styles.dataModelResultRow}>
+        <div className={styles.dataModelResultTitle}>NPM Package</div>
+        <div className={styles.dataModelResultValue}>
+          <a href={npmLink} target="_blank" rel="noreferrer">
+            {npm}
+          </a>
+        </div>
+      </div>
+      <div className={styles.dataModelResultRow}>
+        <div className={styles.dataModelResultTitle}>Version</div>
+        <div className={styles.dataModelResultValue}>{version}</div>
+      </div>
+      <div className={styles.dataModelResultRow}>
+        <div className={styles.dataModelResultTitle}>Author</div>
+        <div className={styles.dataModelResultValue}>{author}</div>
+      </div>
+      <div className={styles.dataModelResultRow}>
+        <div className={styles.dataModelResultTitle}>Tags</div>
+        <div className={styles.dataModelResultValue}>{tags}</div>
+      </div>
+    </div>
+  }
+
   function getResultsUI(dataModels) {
     let resultsRows = [];
 
@@ -266,8 +293,6 @@ export default function Home() {
       let author = model[2];
       let tags = model[3];
       let github = `https://github.com/ceramicstudio/datamodels/tree/main/packages/${id}`;
-      let npm = `@datamodels/${id}`;
-      let npmLink = `https://www.npmjs.com/package/@datamodels/${id}`;
 
       let ownRating = 0;
       let ownRatingDetails = ownRatings[id];
@@ -288,26 +313,7 @@ export default function Home() {
           </div>
           <div className={styles.dataModelResultContent}>
             <div className={styles.dataModelResultInfo}>
-              <div className={styles.dataModelResultRow}>
-                <div className={styles.dataModelResultTitle}>NPM Package</div>
-                <div className={styles.dataModelResultValue}>
-                  <a href={npmLink} target="_blank" rel="noreferrer">
-                    {npm}
-                  </a>
-                </div>
-              </div>
-              <div className={styles.dataModelResultRow}>
-                <div className={styles.dataModelResultTitle}>Version</div>
-                <div className={styles.dataModelResultValue}>{version}</div>
-              </div>
-              <div className={styles.dataModelResultRow}>
-                <div className={styles.dataModelResultTitle}>Author</div>
-                <div className={styles.dataModelResultValue}>{author}</div>
-              </div>
-              <div className={styles.dataModelResultRow}>
-                <div className={styles.dataModelResultTitle}>Tags</div>
-                <div className={styles.dataModelResultValue}>{tags}</div>
-              </div>
+              { displayBasicModelInfo(id, version, author, tags) }
             </div>
             <div className={styles.dataModelResultControls}>
               <button onClick={e => setSelectedModel(id)}>Select</button>
@@ -371,7 +377,8 @@ export default function Home() {
         }
 
         {selectedModel && 
-          <DataModel setSelectedModel={setSelectedModel} selectedModel={selectedModel} />
+          <DataModel setSelectedModel={setSelectedModel} selectedModel={selectedModel} host={host} 
+                     displayBasicModelInfo={displayBasicModelInfo} />
         }
 
         <footer className="cntr-footer">

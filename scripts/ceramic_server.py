@@ -285,9 +285,9 @@ def api_get_model():
     resp = {}
 
     if request.method == 'GET':
-        search = request.args.get('search', '')
+        model_id = request.args.get('modelid', '')
         cdb = CeramicDB()
-        resp = cdb.search_models(search)
+        resp = cdb.get_model(model_id)
 
     response = jsonify({'success': success, 'reason': reason, 'data': resp})
 
