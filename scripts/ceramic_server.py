@@ -5,6 +5,7 @@ from flask import Flask, request, url_for, render_template, jsonify
 from flask_cors import CORS
 from ceramic_db import CeramicDB
 from api_github import ApiGithub
+from api_npm import ApiNPM
 import json
 import requests
 
@@ -380,16 +381,42 @@ def api_stats():
     elif request.method == 'POST':
         body = request.json
         modelid = body.get('modelid', '').strip()
-        monthly_downloads = body.get('monthly_downloads')
-        npm_score = body.get('npm_score')
-        npm_quality = body.get('npm_quality')
-        num_streams = body.get('num_streams')
+        packageid = body.get('packageid', '').strip()
+
+        api_npm = ApiNPM()
+
+        monthly_downloads = 0
+        npm_score = 0
+        npm_quality = 0
+        num_streams = 0
+
+        try:
+            download_info = api_npm.getDownloads(packageid)
+            monthly_downloads = download_info.get('downloads', 0)
+        except:
+            print('Could not retrieve num downloads')
+
+        try:
+            score_info = api_npm.getRegistryScore(packageid)
+            npm_score = score_info.get('final', 0)
+            npm_detail = score_info.get('detail', {})
+            npm_quality = npm_detail.get('quality', 0)
+        except:
+            print('Could not retrieve registry score')
 
         cdb = CeramicDB()
         prev_stats = cdb.get_stats(modelid)
         resp = prev_stats
-        # cdb.add_stats(modelid, monthly_downloads, npm_score, npm_quality, num_streams)
 
+        if resp:
+            monthly_downloads = monthly_downloads or resp[0]
+            npm_score = npm_score or resp[1]
+            npm_quality = npm_quality or resp[2]
+            num_streams = num_streams or resp[3]
+
+        cdb.add_stats(modelid, monthly_downloads, npm_score, npm_quality, num_streams)
+
+        resp = cdb.get_stats(modelid)
 
     response = jsonify({'success': success, 'reason': reason, 'data': resp})
     response = add_cors_headers(request, response)
