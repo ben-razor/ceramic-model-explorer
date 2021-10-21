@@ -20,10 +20,6 @@ View the [Documentation](https://ceramic-explore-docs.web.app/)
 
 For the [Ceramic Network](https://ceramic.network/) task **Create A System For Discovery And/Or Curation Of DataModels** in the [Gitcoin Hackathon](https://gitcoin.co/issue/ceramicnetwork/ceramic/82/100026725).
 
-## Application Architecture
-
-A backend server has endp
-
 ## Requested Features
 * Upvote/downvote data models and schemas
 * List of top rated data models
