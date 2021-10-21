@@ -122,7 +122,7 @@ class CeramicDB:
         rows = c.fetchall()
         return rows
 
-    def add_model(self, modelid, version, author, keywords, readme, package_json, schemas):
+    def add_model(self, modelid, version, author, keywords, readme, package_json, schemas, user_model_info=None):
         c = self.con.cursor()
 
         sql = """
@@ -146,6 +146,17 @@ class CeramicDB:
             )
 
         c.executemany(sql, schema_tuples)
+
+        if user_model_info:
+            sql = """
+                INSERT INTO user_models(modelid, userid, npm_package, repo_url, status, last_updated)
+                VALUES (?, ?, ?, ?, ?, datetime('now'))
+            """
+
+            values = (modelid, user_model_info['userid'], user_model_info['npm_package'], 
+                      user_model_info['repo_url'], user_model_info['status'])
+            
+            c.execute(sql, values)
 
         self.con.commit()
 

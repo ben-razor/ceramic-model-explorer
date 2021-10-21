@@ -102,7 +102,7 @@ def api_rate():
     return response, status
 
 def get_model_info(user_id, repo_id, model_id, branch_id):
-    success = False
+    success = True 
     reason = ''
     new_model_info = {}
 
@@ -484,6 +484,7 @@ def api_user_models():
         if user_id:
             resp = cdb.get_user_models(user_id)
         else:
+            success= False
             status = 400
             reason = 'error-userid-not-supplied'
 
@@ -502,6 +503,7 @@ def api_user_models():
             repo_parts = repo_url.replace('https://', '').split('/')
 
             if len(repo_parts) < 7:
+                success = False
                 status = 400
                 reason = 'error-repo-url-invalid'
             else:
@@ -528,9 +530,28 @@ def api_user_models():
                     readme_md = model_info['readme_md']
                     schemas = model_info['schemas']
 
+                    user_model_info = {
+                        'userid': userid,
+                        'npm_package': npm_package,
+                        'repo_url': repo_url,
+                        'status': 'active'
+                    }
+
                     try:
                         cdb = CeramicDB()
-                        """
+
+                        resp = {
+                            'state': 'ADDING_MODEL',
+                            'model_id': model_id,
+                            'version': package_json['version'],
+                            'author': package_json['author'],
+                            'keywords': ','.join(package_json['keywords']),
+                            'readme_md': readme_md,
+                            'package_json': package_json,
+                            'schemas': schemas,
+                            'user_model_info': user_model_info,
+                        }
+
                         cdb.add_model(
                             model_id,
                             package_json['version'],
@@ -538,12 +559,19 @@ def api_user_models():
                             ','.join(package_json['keywords']),
                             readme_md,
                             package_json,
-                            schemas
+                            schemas,
+                            user_model_info
                         )
-                        """
+                        
                     except Exception as e:
                         print(e)
+                else:
+                    success = False
+                    status = 400
+                    reason = 'error-fetching-files-from-github:' + result['reason']
+                    
         except:
+            success = False
             status = 400
             reason = 'error-fetching-npm-info'
         
