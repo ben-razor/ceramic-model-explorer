@@ -462,7 +462,7 @@ def api_stats():
 @app.route("/api/user_models", methods=['GET', 'POST'])
 def api_user_models():
     """
-    API endpoint for getting stats for a model
+    API endpoint for adding and retrieving user created models
 
     returns:
         {
@@ -480,13 +480,7 @@ def api_user_models():
     if request.method == 'GET':
         user_id = request.args.get('userid', '')
         cdb = CeramicDB()
-
-        if user_id:
-            resp = cdb.get_user_models(user_id)
-        else:
-            success= False
-            status = 400
-            reason = 'error-userid-not-supplied'
+        resp = cdb.get_user_models(user_id)
 
     elif request.method == 'POST':
         body = request.json
@@ -562,7 +556,7 @@ def api_user_models():
                             schemas,
                             user_model_info
                         )
-                        
+
                     except Exception as e:
                         print(e)
                 else:

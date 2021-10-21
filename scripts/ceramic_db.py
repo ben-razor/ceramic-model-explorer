@@ -59,9 +59,10 @@ create_applications_sql = """
     CREATE TABLE IF NOT EXISTS applications (
         application_id integer PRIMARY KEY AUTOINCREMENT,
         name text NOT NULL,
+        image text,
         description text NOT NULL,
         userid text NOT NULL,
-        image text,
+        url text,
         last_updated text
     )
 """
@@ -74,9 +75,12 @@ create_application_models_sql = """
     )
 """
 
-
 recreate_ratings_sql = """
     DROP TABLE IF EXISTS ratings
+"""
+
+recreate_applications_sql = """
+    DROP TABLE IF EXISTS applications
 """
 
 class CeramicDB:
@@ -89,6 +93,7 @@ class CeramicDB:
         c.execute(create_schemas_sql)
         c.execute(create_stats_sql)
         c.execute(create_user_models_sql)
+        c.execute(recreate_applications_sql)
         c.execute(create_applications_sql)
         c.execute(create_application_models_sql)
         self.con.commit()
@@ -170,7 +175,7 @@ class CeramicDB:
         c = self.con.cursor()
 
         c.execute("""
-            SELECT models.modelid, version, author, keywords, readme, monthly_downloads, npm_score
+            SELECT models.modelid, version, author, keywords, readme, monthly_downloads, npm_score, package_json
             FROM models, schemas, stats
             WHERE (models.modelid = schemas.modelid AND models.modelid = stats.modelid and stats.modelid = schemas.modelid)
             AND models.modelid LIKE ? OR schemas.schema_json LIKE ? OR keywords LIKE ? OR author LIKE ? or readme LIKE ?
@@ -227,10 +232,17 @@ class CeramicDB:
 
     def get_user_models(self, userid):
         c = self.con.cursor()
-        c.execute("""
-            SELECT modelid, userid, npm_package, repo_url, status, last_updated
-            FROM user_models WHERE userid = ?
-        """, (userid,))
+        if userid:
+            c.execute("""
+                SELECT modelid, userid, npm_package, repo_url, status, last_updated
+                FROM user_models WHERE userid = ?
+            """, (userid,))
+        else:
+            c.execute("""
+                SELECT modelid, userid, npm_package, repo_url, status, last_updated
+                FROM user_models
+            """)
+
         rows = c.fetchall()
         return rows
 
