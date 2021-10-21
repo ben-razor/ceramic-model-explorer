@@ -354,6 +354,10 @@
     width: 2em;
 }
 
+.csnConnectButton {
+    align-self: center;
+}
+
 .csnConnectButton:disabled {
     color: hsl(150deg, 60%, 40%);
 }
@@ -434,11 +438,25 @@
     display: flex;
 }
 
+.csnHeaderLogo {
+    align-self: flex-start;
+}
+
 .csnHeaderMenu {
     display: flex;
     margin-right: 2em;
 }
 
 .csnHeaderMenuItem {
-    padding: 0.25em;
+    padding: 0.25em 0.8em;
+}
+
+.csnLinkButton {
+    border: 0;
+    padding: 0;
+    color: hsl(13deg, 100%, 30%);
+}
+
+.csnLinkButton:hover {
+    text-decoration: underline;
 }

@@ -5,6 +5,10 @@ a {
   color: hsl(13deg, 100%, 30%);
 }
 
+a:hover {
+  color: hsl(13deg, 100%, 30%);
+}
+
 .md-container {
   max-width: 800px;
   padding-top: 2rem;

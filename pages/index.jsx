@@ -28,6 +28,7 @@ export default function Home() {
   const [connecting, setConnecting] = useState(false);
   const [searchOrder, setSearchOrder] = useState('')
   const [selectedModel, setSelectedModel] = useState('');
+  const [page, setPage] = useState('');
   const [error, setError] = useState('');
   const { addToast } = useToasts();
 
@@ -393,11 +394,17 @@ export default function Home() {
       </Head>
       <div className={styles.csnTopBar}>
         <h2 className={styles.csnHeaderTitlePanel}>
-          <Image src="explorer-192.png" width="40" />&nbsp;
+          <Image className={styles.csnHeaderLogo} src="explorer-192.png" width="40" height="40" />&nbsp;
           Ceramic Data Model Explorer
         </h2>
         <div className={styles.csnHeaderControls}>
           <div className={styles.csnHeaderMenu}>
+            <div className={styles.csnHeaderMenuItem}>
+              <button className={styles.csnLinkButton} onClick={e => setPage('user-models')}>User Models</button>
+            </div>
+            <div className={styles.csnHeaderMenuItem}>
+              <button className={styles.csnLinkButton} onClick={e => setPage('applications')}>Applications</button>
+            </div>
             <div className={styles.csnHeaderMenuItem}>
               <a href="https://ceramic-explore-docs.web.app/" target="_blank" rel="noreferrer">Documentation</a>
             </div>
