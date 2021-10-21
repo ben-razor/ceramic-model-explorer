@@ -20,7 +20,7 @@ create_models_sql = """
         author text,
         keywords text,
         readme text,
-        package_json text
+        package_json text,
     )
 """
 
@@ -44,6 +44,37 @@ create_stats_sql = """
     )
 """
 
+create_user_models_sql = """
+    CREATE TABLE IF NOT EXISTS user_models (
+        modelid text NOT NULL PRIMARY KEY,
+        userid text NOT NULL,
+        npm_package text NOT NULL,
+        repo_url text NOT NULL,
+        status text NOT NULL,
+        last_updated text
+    )
+"""
+
+create_applications_sql = """
+    CREATE TABLE IF NOT EXISTS applications (
+        application_id integer PRIMARY KEY AUTOINCREMENT,
+        name text NOT NULL,
+        description text NOT NULL,
+        userid text NOT NULL,
+        image text,
+        last_updated text
+    )
+"""
+
+create_application_models_sql = """
+    CREATE TABLE IF NOT EXISTS application_models (
+        application_models_id integer PRIMARY KEY AUTOINCREMENT,
+        application_id integer,
+        modelid text
+    )
+"""
+
+
 recreate_ratings_sql = """
     DROP TABLE IF EXISTS ratings
 """
@@ -57,6 +88,9 @@ class CeramicDB:
         c.execute(create_models_sql)
         c.execute(create_schemas_sql)
         c.execute(create_stats_sql)
+        c.execute(create_user_models_sql)
+        c.execute(create_applications_sql)
+        c.execute(create_application_models_sql)
         self.con.commit()
     
     def __del__(self):
@@ -180,3 +214,21 @@ class CeramicDB:
         )
         self.con.commit()
 
+    def get_user_models(self, userid):
+        c = self.con.cursor()
+        c.execute("""
+            SELECT modelid, userid, npm_package, repo_url, status, last_updated
+            FROM user_models WHERE userid = ?
+        """, (userid,))
+        rows = c.fetchall()
+        return rows
+
+    def get_applications(self):
+        c = self.con.cursor()
+        c.execute("""
+            SELECT application_id, name, description, userid, image, last_updated
+            FROM applications, application_models
+            WHERE application.application_id = application_models.application_id
+        """)
+        rows = c.fetchall()
+        return rows

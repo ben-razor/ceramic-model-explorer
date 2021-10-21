@@ -33,7 +33,7 @@ function UserModels(props) {
                         },
                         body: JSON.stringify({
                             userid: userID,
-                            name: modelid,
+                            modelid: name,
                             npmPackage: npmPackage,
                             repoURL: repoURL
                         })
