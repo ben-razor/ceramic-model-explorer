@@ -1,20 +1,32 @@
 # Ceramic Data Model Explorer
 
-For the [Ceramic Network](https://ceramic.network/) task **Create A System For Discovery And/Or Curation Of DataModels** in the [Gitcoin Hackathon](https://gitcoin.co/issue/ceramicnetwork/ceramic/82/100026725).
+An application for searching for DataModels for use with [Ceramic Network](https://ceramic.network/).
+
+Ceramic has an offical [datamodels repository](https://github.com/ceramicstudio/datamodels). The data model explorer makes Github API calls to get model information and schemas for display to the user.
+
+The application also queries the NPM API to get download stats and active score.
+
+A user of the application can search for models based on a number of parameters such as highest downloads or date added.
+
+Users can also add datamodels from their own repositories so other can test and rate them prior to them being accepted into the official Ceramic repository.
+
+Applications that use datamodels can be entered. This has a two-way benefit of allowing developers to more easily find useful datamodels, and also to find applications if they are looking for apps to use as a basis for a new application.
 
 Try the [Online Demo](https://ceramic-explore.vercel.app/)
 
 View the [Documentation](https://ceramic-explore-docs.web.app/)
 
-## Features To Implement
+For the [Ceramic Network](https://ceramic.network/) task **Create A System For Discovery And/Or Curation Of DataModels** in the [Gitcoin Hackathon](https://gitcoin.co/issue/ceramicnetwork/ceramic/82/100026725).
 
+## Application Architecture
+
+A backend server has endp
+
+## Requested Features
 * Upvote/downvote data models and schemas
 * List of top rated data models
 * List applications currently using a given data model package
 * List data models by network usage popularity (package installs or streams created using the model)
 * Search or explore existing data models based on key words, categories, application use cases, etc.
-* An ability for developers to propose a change to an existing data model
-* A way for community members to vote and/or discuss the proposed change
-
-If there is consensus and the proposal is accepted, the system would ideally provide a way to get the original creator/owner to accept the change and update the data model by updating its associated Ceramic streams.
-
+* An ability for developers to propose a change to an existing data model (directs user to Github discussion)
+* A way for community members to vote and/or discuss the proposed change (directs user to Github discussion)
