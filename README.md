@@ -2,6 +2,10 @@
 
 For the [Ceramic Network](https://ceramic.network/) task **Create A System For Discovery And/Or Curation Of DataModels** in the [Gitcoin Hackathon](https://gitcoin.co/issue/ceramicnetwork/ceramic/82/100026725).
 
+Try the [Online Demo](https://ceramic-explore.vercel.app/)
+
+View the [Documentation](https://ceramic-explore-docs.web.app/)
+
 ## Features To Implement
 
 * Upvote/downvote data models and schemas
