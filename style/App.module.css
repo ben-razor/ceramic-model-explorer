@@ -313,6 +313,13 @@
     padding: 0.1em 1em;
 }
 
+.userModelResultHeader {
+    background-color: hsl(13deg, 80%, 60%);
+    color: white;
+    border-radius: 0.9em 0.9em 0 0;
+    padding: 0.1em 1em;
+}
+
 .dataModelResultHeader h3 {
     font-size: 1.4em;
 }
@@ -478,3 +485,4 @@
 .csnSubPageContent {
     padding: 0.5em;
 }
+

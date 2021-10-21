@@ -575,6 +575,54 @@ def api_user_models():
 
     return response, status
 
+@app.route("/api/applications", methods=['GET', 'POST'])
+def api_applications():
+    """
+    API endpoint for adding and retrieving applications that use created models
+
+    returns:
+        {
+          'success': ,     // boolean
+          'reason':        // An string error code like 'error-syntax-error'
+          'resp': {
+          }      
+        }
+    """
+    status = 200
+    success = True
+    reason = 'ok'
+    resp = {}
+
+    if request.method == 'GET':
+        cdb = CeramicDB()
+        resp = cdb.get_applications()
+
+    elif request.method == 'POST':
+        body = request.json
+        name = body.get('name', '').strip()
+        image_url = body.get('imageURL', '').strip()
+        description = body.get('description', '').strip()
+        userid = body.get('userid', '').strip()
+        app_url = body.get('appURL', '').strip()
+        data_model_ids_csv = body.get('dataModelIDs', '').strip()
+        data_model_ids = data_model_ids_csv.split(',')
+        
+        try:
+            cdb = CeramicDB()
+            resp = {'add app: ': [name, image_url, description, userid, app_url, data_model_ids]}
+            cdb.add_application(name, image_url, description, userid, app_url, data_model_ids)
+        except Exception as e:
+            success = False
+            status = 400
+            print(e)
+            reason = 'error-db-error-adding-application:' + str(e)
+        
+
+    response = jsonify({'success': success, 'reason': reason, 'data': resp})
+    response = add_cors_headers(request, response)
+
+    return response, status
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8878)

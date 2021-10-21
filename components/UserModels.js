@@ -42,10 +42,10 @@ function UserModels(props) {
                     let j = await r.json();
 
                     if(j.success) {
-
+                        toast('Great! Your model was added')
                     }
                     else {
-                        setError(j.error);
+                        setError('Error adding model: ' + j.error);
                         console.log('User model error', j.error);
                     }
                 }
@@ -62,45 +62,45 @@ function UserModels(props) {
         e.preventDefault();
     }
 
-    return <div className={styles.applicationsPanel}>
+    return <div className={styles.userModelsPanel}>
         <button onClick={e => goBack()}>&lArr; Back</button>
-        <div class={styles.csnSubPage}>
-            <div class={styles.csnSubPageHeader}>
+        <div className={styles.csnSubPage}>
+            <div className={styles.csnSubPageHeader}>
                 User Models
             </div>
-            <div class={styles.csnSubPageContent}>
+            <div className={styles.csnSubPageContent}>
                 Submit links to your own models.
 
                 <form onSubmit={e => submitUserModel(e)}>
-                    <div class={styles.csnForm}>
-                        <div class={styles.csnFormRow}>
-                            <div class={styles.csnFormLabel}>
+                    <div className={styles.csnForm}>
+                        <div className={styles.csnFormRow}>
+                            <div className={styles.csnFormLabel}>
                                 Name:
                             </div>
-                            <div class={styles.csnFormEntry}>
+                            <div className={styles.csnFormEntry}>
                                 <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="E.g. crispy-bacon" required pattern=".+[-].+" />
                             </div>
                         </div>
 
-                        <div class={styles.csnFormRow}>
-                            <div class={styles.csnFormLabel}>
+                        <div className={styles.csnFormRow}>
+                            <div className={styles.csnFormLabel}>
                                 NPM Package:
                             </div>
-                            <div class={styles.csnFormEntry}>
+                            <div className={styles.csnFormEntry}>
                                 <input type="text" value={npmPackage} onChange={e => setNpmPackage(e.target.value)} placeholder="E.g. @laurent-garnier/crispy-bacon" required pattern="^@.+/.+" />
                             </div>
                         </div>
 
-                        <div class={styles.csnFormRow}>
-                            <div class={styles.csnFormLabel}>
+                        <div className={styles.csnFormRow}>
+                            <div className={styles.csnFormLabel}>
                                 Repo URL:
                             </div>
-                            <div class={styles.csnFormEntry}>
+                            <div className={styles.csnFormEntry}>
                                 <input type="url" value={repoURL} onChange={e => setRepoURL(e.target.value)} placeholder="https://github.com/laurent-garnier/datamodels/tree/your-branch/packages/crispy-bacon" required />
                             </div>
                         </div>
 
-                        <div class={styles.csnFormRow}>
+                        <div className={styles.csnFormRow}>
                             <input type="submit" name="submit" value="Submit" />
                         </div>
                     </div>

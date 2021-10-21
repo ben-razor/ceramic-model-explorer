@@ -26,6 +26,7 @@ export default function Home() {
   const [modelStats, setModelStats] = useState({});
   const [matchingDataModels, setMatchingDataModels] = useState([]);
   const [modelRatings, setModelRatings] = useState({});
+  const [userModels, setUserModels] = useState({});
   const [ownRatings, setOwnRatings] = useState({});
   const [connecting, setConnecting] = useState(false);
   const [searchOrder, setSearchOrder] = useState('')
@@ -113,6 +114,44 @@ export default function Home() {
       })();
     }
   }, [ceramic, dataModels]);
+  
+  useEffect(() => {
+    if(dataModels && host) {
+      (async() => {
+        try {
+          let r = await fetch(host + '/api/user_models')
+          let j = await r.json();
+
+          if(j.success) {
+            let _userModels = {};
+            for(let info of j.data) {
+              let modelid = info[0];
+              let userid = info[1];
+              let packageid = info[2];
+              let repo_url = info[3];
+              let status = info[4];
+              let updated = info[5];
+
+              _userModels[modelid] = {
+                'userid': userid,
+                'packageid': packageid,
+                'repo_url': repo_url,
+                'status': status,
+                'updated': updated
+              }
+            }
+            setUserModels(_userModels);
+          }
+          else {
+            console.log(j.reason);
+          }
+        }
+        catch(e) {
+          console.log(e);
+        }
+      })();
+    }
+  }, [dataModels, host]);
 
   useEffect(() => {
     if(ethereum && ethAddresses && !ceramic) {
@@ -303,15 +342,20 @@ export default function Home() {
     e.preventDefault();
   }
 
-  function displayBasicModelInfo(modelid, version, author, tags, monthly_downloads, npm_score) {
-    let npm = `@datamodels/${modelid}`;
-    let npmLink = `https://www.npmjs.com/package/@datamodels/${modelid}`;
+  function displayBasicModelInfo(modelid, version, author, tags, monthly_downloads, npm_score, userModelInfo) {
+    let npmLink = `https://www.npmjs.com/package/{package_name}`;
+    let packageName = `@datamodels/${modelid}`;
+
+    if(userModelInfo) {
+      packageName = userModelInfo.packageid;
+    }
+
     return <div>
       <div className={styles.dataModelResultRow}>
         <div className={styles.dataModelResultTitle}>NPM Package</div>
         <div className={styles.dataModelResultValue}>
           <a href={npmLink} target="_blank" rel="noreferrer">
-            {npm}
+            {packageName}
           </a>
         </div>
       </div>
@@ -343,6 +387,17 @@ export default function Home() {
       let version = model[1];
       let author = model[2];
       let tags = model[3];
+      let packageJson = model[7]
+      let packageName = id;
+      let userModelInfo;
+
+      if(userModels && userModels[id]) {
+        userModelInfo = userModels[id];
+      }
+      else {
+        packageName = '@datamodels/packageName';
+      }
+
       let monthly_downloads = 0;
       let npm_score = 0;
       if(modelStats[id]) {
@@ -365,12 +420,12 @@ export default function Home() {
 
       resultsRows.push(
         <div className={styles.dataModelResult} key={id}>
-          <div className={styles.dataModelResultHeader}>
+          <div className={!userModelInfo ? styles.dataModelResultHeader : styles.userModelResultHeader}>
             <div className={styles.dataModelHeaderName}>{name}</div>
           </div>
           <div className={styles.dataModelResultContent}>
             <div className={styles.dataModelResultInfo}>
-              { displayBasicModelInfo(id, version, author, tags, monthly_downloads, npm_score) }
+              { displayBasicModelInfo(id, version, author, tags, monthly_downloads, npm_score, userModelInfo) }
             </div>
             <div className={styles.dataModelResultControls}>
               <button onClick={e => setSelectedModel(id)}>Select</button>

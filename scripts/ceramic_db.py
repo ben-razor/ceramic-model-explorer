@@ -59,10 +59,10 @@ create_applications_sql = """
     CREATE TABLE IF NOT EXISTS applications (
         application_id integer PRIMARY KEY AUTOINCREMENT,
         name text NOT NULL,
-        image text,
+        image_url text,
         description text NOT NULL,
         userid text NOT NULL,
-        url text,
+        app_url text,
         last_updated text
     )
 """
@@ -80,7 +80,11 @@ recreate_ratings_sql = """
 """
 
 recreate_applications_sql = """
-    DROP TABLE IF EXISTS applications
+    DROP TABLE IF EXISTS applications;
+"""
+
+recreate_application_models_sql = """
+    DROP TABLE IF EXISTS application_models;
 """
 
 class CeramicDB:
@@ -93,7 +97,8 @@ class CeramicDB:
         c.execute(create_schemas_sql)
         c.execute(create_stats_sql)
         c.execute(create_user_models_sql)
-        c.execute(recreate_applications_sql)
+        #c.execute(recreate_applications_sql)
+        #c.execute(recreate_application_models_sql)
         c.execute(create_applications_sql)
         c.execute(create_application_models_sql)
         self.con.commit()
@@ -249,9 +254,35 @@ class CeramicDB:
     def get_applications(self):
         c = self.con.cursor()
         c.execute("""
-            SELECT application_id, name, description, userid, image, last_updated
+            SELECT applications.application_id, name, image_url, description, userid, app_url, last_updated
             FROM applications, application_models
-            WHERE application.application_id = application_models.application_id
+            WHERE applications.application_id = application_models.application_id
         """)
         rows = c.fetchall()
         return rows
+
+    def add_application(self, name, image_url, description, userid, app_url, data_model_ids):
+
+        c = self.con.cursor()
+       
+        sql = """
+            INSERT INTO applications(name, image_url, description, userid, app_url, last_updated) 
+            VALUES (?, ?, ?, ?, ?, datetime('now'))
+        """
+
+        values = (name, image_url, description, userid, app_url)
+        c.execute(sql, values)
+
+        application_id = c.lastrowid
+        sql = """
+            INSERT INTO application_models(application_id, modelid)
+            VALUES (?, ?)
+        """
+
+        tuples = [];
+        for model_id in data_model_ids:
+            tuples.append( (application_id, model_id ) )
+
+        c.executemany(sql, tuples)
+
+        self.con.commit()
