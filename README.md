@@ -6,7 +6,7 @@ Ceramic has an offical [datamodels repository](https://github.com/ceramicstudio/
 
 The application also queries the NPM API to get download stats and active score.
 
-A user of the application can search for models based on a number of parameters such as highest downloads or date added.
+When the user enters a search term, the model content (user name, tags, readme, etc.) are searched and the results displayed. The results can be sorted based on a number of parameters such as highest downloads or date added.
 
 Users can also add datamodels from their own repositories so other can test and rate them prior to them being accepted into the official Ceramic repository.
 
