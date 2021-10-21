@@ -14,6 +14,8 @@ Applications that use datamodels can be entered. This has a two-way benefit of a
 
 Try the [Online Demo](https://ceramic-explore.vercel.app/)
 
+Watch the [Demo Video](https://youtu.be/DVUr74b9XdU)
+
 View the [Documentation](https://ceramic-explore-docs.web.app/)
 
 For the [Ceramic Network](https://ceramic.network/) task **Create A System For Discovery And/Or Curation Of DataModels** in the [Gitcoin Hackathon](https://gitcoin.co/issue/ceramicnetwork/ceramic/82/100026725).
