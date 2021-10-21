@@ -20,7 +20,7 @@ create_models_sql = """
         author text,
         keywords text,
         readme text,
-        package_json text,
+        package_json text
     )
 """
 

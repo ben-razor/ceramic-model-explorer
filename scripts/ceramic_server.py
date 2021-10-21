@@ -108,7 +108,7 @@ def get_model_info(user_id, repo_id, model_id, branch_id):
 
     try:
         apiGithub = ApiGithub(user_id, repo_id)
-        tree = apiGithub.lsTree()
+        tree = apiGithub.lsTree(branch=branch_id)
 
         rawContentURL = apiGithub.getRawContentURL(branch_id, f'packages/{model_id}/package.json')
         r = requests.get(rawContentURL)
@@ -118,17 +118,22 @@ def get_model_info(user_id, repo_id, model_id, branch_id):
         readme_md = requests.get(rawReadmeURL).text
 
         schemasFolderBase = f'packages/{model_id}/schemas'
+        print(tree)
         schemasFolder = list(filter(lambda x: x['path'].startswith(schemasFolderBase), tree))
 
         schemas = []
         for item in schemasFolder:
             schema_path = item['path']
             schema_file = schema_path.replace(schemasFolderBase, '')
+            print('Path: ', schema_path)
             
             if schema_file:
-                rawSchemaURL = apiGithub.getRawContentURL('main', f'{item["path"]}')
+                rawSchemaURL = apiGithub.getRawContentURL(branch_id, f'{item["path"]}')
+                print('rsu', rawSchemaURL)
                 rSchema = requests.get(rawSchemaURL)
+                print('rsu got', rawSchemaURL)
                 schema_json = rSchema.json()
+                print('rsu json')
                 schemas.append({
                     'name': schema_file,
                     'path': schema_path,
@@ -513,6 +518,7 @@ def api_user_models():
 
                 print(f'Attempting to get Github files for {gh_user_id}, {gh_repo}, {gh_package}, {gh_branch}')
                 result = get_model_info(gh_user_id, gh_repo, gh_package, gh_branch)
+                resp = result
 
                 if result['success']:
                     model_info = result['data']
