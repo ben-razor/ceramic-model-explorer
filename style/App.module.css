@@ -17,10 +17,6 @@
     justify-content: space-between;
 }
 
-.csnHeaderControls {
-
-}
-
 .csnLogoPanel {
     display: flex;
     flex-direction: row;
@@ -427,4 +423,22 @@
 .hoverTitle {
     border-bottom: 1px dashed grey;
     cursor: help;
+}
+
+.csnHeaderControls {
+    display: flex;
+    align-items: center;
+}
+
+.csnHeaderTitlePanel {
+    display: flex;
+}
+
+.csnHeaderMenu {
+    display: flex;
+    margin-right: 2em;
+}
+
+.csnHeaderMenuItem {
+    padding: 0.25em;
 }

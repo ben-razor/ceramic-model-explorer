@@ -392,11 +392,16 @@ export default function Home() {
         <link rel="icon" href="/favicon-32x32.png" />
       </Head>
       <div className={styles.csnTopBar}>
-        <h2>
-          <Image src="explorer-192.png" width="60" />&nbsp;
+        <h2 className={styles.csnHeaderTitlePanel}>
+          <Image src="explorer-192.png" width="40" />&nbsp;
           Ceramic Data Model Explorer
         </h2>
         <div className={styles.csnHeaderControls}>
+          <div className={styles.csnHeaderMenu}>
+            <div className={styles.csnHeaderMenuItem}>
+              <a href="https://ceramic-explore-docs.web.app/" target="_blank" rel="noreferrer">Documentation</a>
+            </div>
+          </div>
           { ceramic ?
             <button className={styles.csnConnectButton} onClick={e => connectAccount(e)} disabled>Connected</button> :
             (
