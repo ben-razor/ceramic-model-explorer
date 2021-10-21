@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import styles from '../../style/App.module.css'
+import styles from '../style/App.module.css'
 import ReactMarkdown from 'react-markdown'
 
 function DataModel(props) {
@@ -9,11 +9,10 @@ function DataModel(props) {
     let displayBasicModelInfo = props.displayBasicModelInfo;
     let host = props.host;
 
-    let name = selectedModel.split('-').map(x => x[0].toUpperCase() + x.slice(1)).join(' ');
-
     const [selectedTab, setSelectedTab] = useState('readme');
     const [modelInfo, setModelInfo] = useState({});
-
+    const [name, setName] = useState('');
+   
     useEffect(() => {
         if(selectedModel) {
             (async() => {
@@ -26,6 +25,9 @@ function DataModel(props) {
                 setModelInfo(modelTupleToObj(j.data[0]));
             })()
             
+            let _name = selectedModel.split('-').map(x => x[0].toUpperCase() + x.slice(1)).join(' ');
+            setName(_name);
+
         }
     }, [selectedModel]);
 

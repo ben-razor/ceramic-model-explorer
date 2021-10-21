@@ -319,7 +319,7 @@ def api_get_model():
 
     return response, status
 
-@app.route("/api/get_model_ratings", methods=['GET'])
+@app.route("/api/get_model_ratings", methods=['GET']) 
 def api_get_model_ratings():
     """
     API endpoint for getting data for one data model
@@ -377,7 +377,7 @@ def api_stats():
     if request.method == 'GET':
         model_id = request.args.get('modelid', '')
         cdb = CeramicDB()
-        
+
         if model_id:
             resp = cdb.get_stats(model_id)
         else:

@@ -10,8 +10,8 @@ import CeramicClient from '@ceramicnetwork/http-client';
 import ThreeIdResolver from '@ceramicnetwork/3id-did-resolver';
 import { ThreeIdConnect,  EthereumAuthProvider } from '@3id/connect'
 import { TileDocument } from '@ceramicnetwork/stream-tile'
-import Applications from './components/Applications'
-import DataModel from './components/DataModel'
+import Applications from '../components/Applications'
+import DataModel from '../components/DataModel'
 import { DID } from 'dids'
 const API_URL = 'https://ceramic-clay.3boxlabs.com';
 const TOAST_TIMEOUT = 5000;
@@ -28,6 +28,7 @@ export default function Home() {
   const [connecting, setConnecting] = useState(false);
   const [searchOrder, setSearchOrder] = useState('')
   const [selectedModel, setSelectedModel] = useState('');
+  const [error, setError] = useState('');
   const { addToast } = useToasts();
 
   const [ceramic, setCeramic] = useState();
@@ -47,34 +48,40 @@ export default function Home() {
     if(host) {
       (async() => {
 
-        let r = await fetch(host + '/api/search_models?' + new URLSearchParams({
-          'search': ''
-        }))
+        try {
+          let r = await fetch(host + '/api/search_models?' + new URLSearchParams({
+            'search': ''
+          }))
 
-        let j = await r.json();
+          let j = await r.json();
 
-        setDataModels(j.data);
-        setMatchingDataModels(j.data);
+          setDataModels(j.data);
+          setMatchingDataModels(j.data);
 
-        let rStats = await fetch(host + '/api/stats');
-        let jStats = await rStats.json();
-        let stats = {}
-        if(jStats.success) {
-          for(let row of jStats.data) {
-            let modelid = row[0];
-            let monthly_downloads = row[1];
-            let npm_score = row[2];
-            let npm_quality = row[3];
-            let num_streams = row[4];
-            stats[modelid] = {
-              monthly_downloads: monthly_downloads,
-              npm_score: npm_score,
-              npm_quality: npm_quality,
-              num_streams: num_streams
+          let rStats = await fetch(host + '/api/stats');
+          let jStats = await rStats.json();
+          let stats = {}
+          if(jStats.success) {
+            for(let row of jStats.data) {
+              let modelid = row[0];
+              let monthly_downloads = row[1];
+              let npm_score = row[2];
+              let npm_quality = row[3];
+              let num_streams = row[4];
+              stats[modelid] = {
+                monthly_downloads: monthly_downloads,
+                npm_score: npm_score,
+                npm_quality: npm_quality,
+                num_streams: num_streams
+              }
             }
           }
+          setModelStats(stats);
         }
-       setModelStats(stats);
+        catch(e) {
+          setError('Error connecting to model server. Try again later.');
+          console.log(e);
+        }
       })();
     }
  }, [host]);
@@ -84,16 +91,21 @@ export default function Home() {
       let userID = ceramic.did.id;
 
       (async() => {
-        let r = await fetch(host + '/api/rate?' + new URLSearchParams({
-          'userid': userID 
-        }))
+        try {
+          let r = await fetch(host + '/api/rate?' + new URLSearchParams({
+            'userid': userID 
+          }))
 
-        let j = await r.json();
-        if(j.success) {
-          setOwnRatings(ratingTuplesToObj(j.data));
+          let j = await r.json();
+          if(j.success) {
+            setOwnRatings(ratingTuplesToObj(j.data));
+          }
+          else {
+            console.log(j.reason);
+          }
         }
-        else {
-          console.log(j.reason);
+        catch(e) {
+          console.log(e);
         }
       })();
     }
@@ -168,18 +180,24 @@ export default function Home() {
   useEffect(() => {
     if(dataModels && host) {
       (async() => {
-        let r = await fetch(host + '/api/get_model_ratings');
-        let j = await r.json();
-        if(j.success) {
+        try {
+          let r = await fetch(host + '/api/get_model_ratings');
+          let j = await r.json();
+          if(j.success) {
 
-          let _modelRatings = {};
-          for(let ratingInfo of j.data) {
-            let modelid = ratingInfo[0];
-            let rating = ratingInfo[1];
-            _modelRatings[modelid] = rating;
+            let _modelRatings = {};
+            for(let ratingInfo of j.data) {
+              let modelid = ratingInfo[0];
+              let rating = ratingInfo[1];
+              _modelRatings[modelid] = rating;
+            }
+            setModelRatings(_modelRatings);
           }
-          setModelRatings(_modelRatings);
         }
+        catch(e) {
+          console.log(e);
+        }
+        
       })();
     }
   }, [dataModels, ownRatings, host])
@@ -391,7 +409,8 @@ export default function Home() {
       </div>
 
       <Container className="md-container">
-        {!selectedModel &&
+        { error && <h4>{error}</h4> }
+        { !error && !selectedModel &&
           <div>
             <div className={styles.csnBasicSearchBar}>
               <input className={styles.csnSearchInput} type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search for a data model..." />
@@ -407,7 +426,7 @@ export default function Home() {
           </div>
         }
 
-        {selectedModel && 
+        { !error && selectedModel && 
           <DataModel setSelectedModel={setSelectedModel} selectedModel={selectedModel} host={host} 
                      displayBasicModelInfo={displayBasicModelInfo} />
         }
