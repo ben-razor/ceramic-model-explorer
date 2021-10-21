@@ -7,6 +7,7 @@ function DataModel(props) {
     let selectedModel = props.selectedModel;
     let setSelectedModel = props.setSelectedModel;
     let displayBasicModelInfo = props.displayBasicModelInfo;
+    let goBack = props.goBack;
     let host = props.host;
 
     const [selectedTab, setSelectedTab] = useState('readme');
@@ -45,10 +46,6 @@ function DataModel(props) {
         }
     }
 
-    function goBack() {
-        setSelectedModel('');
-    }
-
     function prettyPrintSchema(schema) {
         let content = 'Schema not loaded';
         try {
@@ -61,7 +58,7 @@ function DataModel(props) {
     }
 
     return <div className={styles.dataModelPanel}>
-                <button onClick={e => goBack()}>&lArr; Back</button>
+        <button onClick={e => goBack()}>&lArr; Back</button>
         <div className={styles.dataModelResult}>
             <div className={styles.dataModelResultHeader}>
             <div className={styles.dataModelHeaderName}>{name}</div>

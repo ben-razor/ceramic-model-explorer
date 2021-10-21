@@ -12,6 +12,8 @@ import { ThreeIdConnect,  EthereumAuthProvider } from '@3id/connect'
 import { TileDocument } from '@ceramicnetwork/stream-tile'
 import Applications from '../components/Applications'
 import DataModel from '../components/DataModel'
+import UserModels from '../components/UserModels'
+
 import { DID } from 'dids'
 const API_URL = 'https://ceramic-clay.3boxlabs.com';
 const TOAST_TIMEOUT = 5000;
@@ -207,6 +209,11 @@ export default function Home() {
 
   }, [selectedModel]);
 
+  function goBack() {
+    setSelectedModel('');
+    setPage('');
+  }
+
   function rateModel(e, modelid) {
     if(ceramic) {
       toast('Superstar!');
@@ -386,6 +393,52 @@ export default function Home() {
     return resultsRows;
   }
 
+
+  function getSearchPage() {
+    return <div>
+      <div className={styles.csnBasicSearchBar}>
+        <input className={styles.csnSearchInput} type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search for a data model..." />
+        <select className={styles.csnSearchOrderSelect} onChange={e => setSearchOrder(e.target.value)}>
+          <option value="">Classics</option>
+          <option value="newest">Newest</option>
+          <option value="highest-rated">Highest Rated</option>
+        </select>
+      </div>
+      <div>
+        {getResultsUI(matchingDataModels)}
+      </div>
+    </div>
+  }
+
+  function getDataModelPage() {
+    return <DataModel setSelectedModel={setSelectedModel} selectedModel={selectedModel} host={host} 
+                displayBasicModelInfo={displayBasicModelInfo} goBack={goBack} />
+  }
+
+  function getUserModelsPage() {
+    return <UserModels goBack={goBack} />
+  }
+
+  function getApplicationsPage() {
+    return <Applications goBack={goBack} />
+  }
+
+  function getPageID() {
+    let pageID = page;
+
+    if(!pageID) {
+      if(selectedModel) {
+        pageID = 'data-model';
+      }
+      else {
+        pageID = 'search';
+      }
+    }
+    return pageID;
+  }
+
+  let pageID = getPageID();
+
   return (
     <div>
       <Head>
@@ -422,26 +475,11 @@ export default function Home() {
 
       <Container className="md-container">
         { error && <h4>{error}</h4> }
-        { !error && !selectedModel &&
-          <div>
-            <div className={styles.csnBasicSearchBar}>
-              <input className={styles.csnSearchInput} type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search for a data model..." />
-              <select className={styles.csnSearchOrderSelect} onChange={e => setSearchOrder(e.target.value)}>
-                <option value="">Classics</option>
-                <option value="newest">Newest</option>
-                <option value="highest-rated">Highest Rated</option>
-              </select>
-            </div>
-            <div>
-              {getResultsUI(matchingDataModels)}
-            </div>
-          </div>
-        }
 
-        { !error && selectedModel && 
-          <DataModel setSelectedModel={setSelectedModel} selectedModel={selectedModel} host={host} 
-                     displayBasicModelInfo={displayBasicModelInfo} />
-        }
+        { !error && (pageID === 'search') && getSearchPage()}
+        { !error && (pageID === 'data-model') && getDataModelPage()}
+        { !error && (pageID === 'user-models') && getUserModelsPage()}
+        { !error && (pageID === 'applications') && getApplicationsPage()}
 
         <footer className="cntr-footer">
         </footer>

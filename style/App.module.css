@@ -289,7 +289,7 @@
 }
 
 .dataModelResult {
-    border: 1px solid darkorange;
+    border: 1px solid hsl(13deg, 100%, 40%);
     border-radius: 1em;
     margin: 0.5em 0;
 }
@@ -459,4 +459,22 @@
 
 .csnLinkButton:hover {
     text-decoration: underline;
+}
+
+.csnSubPage {
+    margin-top: 0.5em;
+    border: 1px solid hsl(13deg, 100%, 40%);
+    border-radius: 1em;
+    margin: 0.5em 0;
+}
+
+.csnSubPageHeader {
+    background-color: hsl(13deg, 100%, 40%);
+    color: white;
+    border-radius: 0.9em 0.9em 0 0;
+    padding: 0.1em 1em;
+}
+
+.csnSubPageContent {
+    padding: 0.5em;
 }
