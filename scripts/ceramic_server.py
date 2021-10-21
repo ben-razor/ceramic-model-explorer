@@ -101,36 +101,20 @@ def api_rate():
 
     return response, status
 
+def get_model_info(user_id, repo_id, model_id, branch_id):
+    success = False
+    reason = ''
+    new_model_info = {}
 
-def get_model_info(existing_model_ids=[]):
-    """
-    Get the package.json, README.md and schemas from Github.
+    try:
+        apiGithub = ApiGithub(user_id, repo_id)
+        tree = apiGithub.lsTree()
 
-    param: existing_model_ids An array of model ids to ignore
-    """
-    apiGithub = ApiGithub('ceramicstudio', 'datamodels')
-
-    tree = apiGithub.lsTree()
-    packagesFolder = list(filter(lambda x: x['path'] == 'packages', tree))
-    packagesURL = packagesFolder[0]['url']
-
-    j = apiGithub.get(packagesURL) 
-
-    dataModels = j['tree']
-
-    new_model_infos = []
-
-    for model in dataModels:
-        model_id = model['path']
-
-        if model_id in existing_model_ids:
-            continue
-
-        rawContentURL = apiGithub.getRawContentURL('main', f'packages/{model_id}/package.json')
+        rawContentURL = apiGithub.getRawContentURL(branch_id, f'packages/{model_id}/package.json')
         r = requests.get(rawContentURL)
         package_json = r.json()
 
-        rawReadmeURL = apiGithub.getRawContentURL('main', f'packages/{model_id}/README.md');
+        rawReadmeURL = apiGithub.getRawContentURL(branch_id, f'packages/{model_id}/README.md')
         readme_md = requests.get(rawReadmeURL).text
 
         schemasFolderBase = f'packages/{model_id}/schemas'
@@ -151,12 +135,55 @@ def get_model_info(existing_model_ids=[]):
                     'schema_json': schema_json 
                 })
 
-        new_model_infos.append({
+        new_model_info = {
             'model_id': model_id,
             'package_json': package_json,
             'readme_md': readme_md,
             'schemas': schemas
-        })
+        }
+
+    except Exception as e:
+        print(e)
+        success = False
+        reason  = str(e)
+
+    return {
+        'success': success,
+        'reason': reason,
+        'data': new_model_info
+    }
+ 
+def get_model_infos(existing_model_ids=[]):
+    """
+    Get the package.json, README.md and schemas from Github.
+
+    param: existing_model_ids An array of model ids to ignore
+    """
+    user_id = 'ceramicstudio'
+    repo_id = 'datamodels'
+
+    apiGithub = ApiGithub(user_id, repo_id)
+
+    tree = apiGithub.lsTree()
+    packagesFolder = list(filter(lambda x: x['path'] == 'packages', tree))
+    packagesURL = packagesFolder[0]['url']
+
+    j = apiGithub.get(packagesURL) 
+
+    dataModels = j['tree']
+
+    new_model_infos = []
+
+    for model in dataModels:
+        model_id = model['path']
+
+        if model_id in existing_model_ids:
+            continue
+
+        result = get_model_info(user_id, repo_id, model_id, 'main')
+
+        if result['success']:
+            new_model_infos.append(result['data'])
     
     return new_model_infos
 
@@ -188,7 +215,7 @@ def api_update_models():
 
     print('Existing model ids: ', existing_model_ids)
 
-    new_model_infos = get_model_info(existing_model_ids)
+    new_model_infos = get_model_infos(existing_model_ids)
     added_models = []
 
     for model_info in new_model_infos:
@@ -355,7 +382,6 @@ def api_get_model_ratings():
 
     return response, status
 
-
 @app.route("/api/stats", methods=['GET', 'POST'])
 def api_stats():
     """
@@ -428,6 +454,98 @@ def api_stats():
 
     return response, status
 
+@app.route("/api/user_models", methods=['GET', 'POST'])
+def api_user_models():
+    """
+    API endpoint for getting stats for a model
+
+    returns:
+        {
+          'success': ,     // boolean
+          'reason':        // An string error code like 'error-syntax-error'
+          'resp': {
+          }      
+        }
+    """
+    status = 200
+    success = True
+    reason = 'ok'
+    resp = {}
+
+    if request.method == 'GET':
+        user_id = request.args.get('userid', '')
+        cdb = CeramicDB()
+
+        if user_id:
+            resp = cdb.get_user_models(user_id)
+        else:
+            status = 400
+            reason = 'error-userid-not-supplied'
+
+    elif request.method == 'POST':
+        body = request.json
+        modelid = body.get('modelid', '').strip()
+        userid = body.get('userid', '').strip()
+        npm_package = body.get('npmPackage', '').strip()
+        repo_url = body.get('repoURL', '').strip()
+
+        api_npm = ApiNPM()
+
+        try:
+            npm_info = api_npm.getRepoInfo(npm_package)
+
+            repo_parts = repo_url.replace('https://', '').split('/')
+
+            if len(repo_parts) < 7:
+                status = 400
+                reason = 'error-repo-url-invalid'
+            else:
+                gh_user_id = repo_parts[1]
+                gh_repo = repo_parts[2]
+                gh_branch = repo_parts[4]
+                gh_package = repo_parts[6]
+
+                package_url = f'https://raw.githubusercontent.com/{gh_user_id}/{gh_repo}/{gh_branch}/packages/{gh_package}/package.json'
+                print('Getting package json from', package_url)
+
+                readme_url = f'https://raw.githubusercontent.com/{gh_user_id}/{gh_repo}/{gh_branch}/packages/{gh_package}/README.md'
+                print('Getting readme from', readme_url)
+
+                print(f'Attempting to get Github files for {gh_user_id}, {gh_repo}, {gh_package}, {gh_branch}')
+                result = get_model_info(gh_user_id, gh_repo, gh_package, gh_branch)
+
+                if result['success']:
+                    model_info = result['data']
+
+                    model_id = model_info['model_id']
+                    package_json = model_info['package_json']
+                    readme_md = model_info['readme_md']
+                    schemas = model_info['schemas']
+
+                    try:
+                        cdb = CeramicDB()
+                        """
+                        cdb.add_model(
+                            model_id,
+                            package_json['version'],
+                            package_json['author'],
+                            ','.join(package_json['keywords']),
+                            readme_md,
+                            package_json,
+                            schemas
+                        )
+                        """
+                    except Exception as e:
+                        print(e)
+        except:
+            status = 400
+            reason = 'error-fetching-npm-info'
+        
+
+    response = jsonify({'success': success, 'reason': reason, 'data': resp})
+    response = add_cors_headers(request, response)
+
+    return response, status
 
 
 if __name__ == '__main__':
