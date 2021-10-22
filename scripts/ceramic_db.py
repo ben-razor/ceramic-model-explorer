@@ -254,7 +254,7 @@ class CeramicDB:
     def get_applications(self):
         c = self.con.cursor()
         c.execute("""
-            SELECT applications.application_id, name, image_url, description, userid, app_url, last_updated
+            SELECT applications.application_id, name, image_url, description, userid, app_url, last_updated, modelid
             FROM applications, application_models
             WHERE applications.application_id = application_models.application_id
         """)

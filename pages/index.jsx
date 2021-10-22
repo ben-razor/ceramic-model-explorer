@@ -31,6 +31,7 @@ export default function Home() {
   const [connecting, setConnecting] = useState(false);
   const [searchOrder, setSearchOrder] = useState('')
   const [selectedModel, setSelectedModel] = useState('');
+  const [applications, setApplications] = useState({});
   const [page, setPage] = useState('');
   const [error, setError] = useState('');
   const { addToast } = useToasts();
@@ -154,6 +155,37 @@ export default function Home() {
   }, [dataModels, host]);
 
   useEffect(() => {
+    if(dataModels && host) {
+      (async() => {
+        try {
+          let r = await fetch(host + '/api/applications')
+          let j = await r.json();
+
+          if(j.success) {
+            let _applications = {};
+            for(let info of j.data) {
+              let modelid = info[7];
+              if(_applications[modelid]) {
+                _applications[modelid]++;
+              }
+              else {
+                _applications[modelid] = 1;
+              }
+            }
+            setApplications(_applications);
+          }
+          else {
+            console.log(j.reason);
+          }
+        }
+        catch(e) {
+          console.log(e);
+        }
+      })();
+    }
+  }, [dataModels, host]);
+
+  useEffect(() => {
     if(ethereum && ethAddresses && !ceramic) {
       (async () => {
         try {
@@ -255,7 +287,6 @@ export default function Home() {
 
   function rateModel(e, modelid) {
     if(ceramic) {
-      toast('Superstar!');
 
       let userID = ceramic.did.id;
       let rating = 10;
@@ -281,6 +312,12 @@ export default function Home() {
 
         let j = await r.json();
         if(j.success) {
+          if(rating) {
+            toast('Superstar!');
+          }
+          else {
+            toast('Star removed from Data Model');
+          }
           setOwnRatings(ratingTuplesToObj(j.data));
         }
         else {
@@ -342,7 +379,7 @@ export default function Home() {
     e.preventDefault();
   }
 
-  function displayBasicModelInfo(modelid, version, author, tags, monthly_downloads, npm_score, userModelInfo) {
+  function displayBasicModelInfo(modelid, version, author, tags, monthly_downloads, npm_score, userModelInfo, applications) {
     let npmLink = `https://www.npmjs.com/package/{package_name}`;
     let packageName = `@datamodels/${modelid}`;
 
@@ -375,6 +412,10 @@ export default function Home() {
         <div className={styles.dataModelResultTitle}><span className={styles.hoverTitle} title="Monthly Downloads">Downloads</span></div>
         <div className={styles.dataModelResultValue}>{monthly_downloads}</div>
       </div>
+      <div className={styles.dataModelResultRow}>
+        <div className={styles.dataModelResultTitle}>Applications</div>
+        <div className={styles.dataModelResultValue}>{applications}</div>
+      </div>
     </div>
   }
 
@@ -395,7 +436,12 @@ export default function Home() {
         userModelInfo = userModels[id];
       }
       else {
-        packageName = '@datamodels/packageName';
+        packageName = '@datamodels/' + id;
+      }
+
+      let numApplications = 0;
+      if(applications && applications[id]) {
+        numApplications = applications[id];
       }
 
       let monthly_downloads = 0;
@@ -425,7 +471,7 @@ export default function Home() {
           </div>
           <div className={styles.dataModelResultContent}>
             <div className={styles.dataModelResultInfo}>
-              { displayBasicModelInfo(id, version, author, tags, monthly_downloads, npm_score, userModelInfo) }
+              { displayBasicModelInfo(id, version, author, tags, monthly_downloads, npm_score, userModelInfo, numApplications) }
             </div>
             <div className={styles.dataModelResultControls}>
               <button onClick={e => setSelectedModel(id)}>Select</button>

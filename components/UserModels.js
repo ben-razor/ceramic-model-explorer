@@ -13,12 +13,6 @@ function UserModels(props) {
     const [repoURL, setRepoURL] = useState('');
     const [error, setError] = useState('');
 
-    useEffect(() => {
-        if(error) {
-            toast(error);
-        }
-    }, [error])
-
     function submitUserModel(e) {
         if(ceramic) {
             let userID = ceramic.did.id;
@@ -45,7 +39,7 @@ function UserModels(props) {
                         toast('Great! Your model was added')
                     }
                     else {
-                        setError('Error adding model: ' + j.error);
+                        toast('Error adding model: ' + j.error);
                         console.log('User model error', j.error);
                     }
                 }
