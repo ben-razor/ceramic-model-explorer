@@ -506,3 +506,9 @@
 .applicationInfo {
     width: 80%;
 }
+
+.applicationInput {
+    border-radius: 0.5em;
+    font-size: 1em;
+    padding-left: 0.5em;
+}

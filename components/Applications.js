@@ -23,6 +23,7 @@ function Applications(props) {
         userID = ceramic.did.id;
     }
 
+    console.log(userID)
     function submitApplication(e) {
         if(ceramic) {
 
@@ -125,18 +126,14 @@ function Applications(props) {
 
     function displayApplications(applications) {
         let apps = [];
+        let i = 0;
         for(let app of applications) {
-
-            let editable = false;
-            if(userID === app.userid) {
-                editable = true;
-            }
 
             let imageUrl = app.image_url || '/no-image-1.png';
 
             let rows = 
-            <form onSubmit={e => editApplication(e)}>
-                <div className={styles.applicationResult} key={app.applicationid}>
+            <form onSubmit={e => editApplication(e)} key={app.applicationid}>
+                <div className={styles.applicationResult}>
                     <div className={styles.applicationImageContainer}>
                         <img className={styles.applicationImage} src={imageUrl} />
                     </div>
@@ -146,10 +143,7 @@ function Applications(props) {
                                 Name
                             </div>
                             <div className={styles.dataModelResultValue}>
-                                { editable ? 
-                                    <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Application name" required /> :
-                                    app.name
-                                }
+                                {app.name}
                             </div>
                         </div>
                         <div className={styles.dataModelResultRow}>
@@ -169,11 +163,6 @@ function Applications(props) {
                             </div>
                         </div>
                     </div>
-                    { editable &&
-                        <div>
-                            <input type="submit" name="submit" value="Submit" />
-                        </div>
-                    }
                 </div>
             </form>
             apps.push(rows)
