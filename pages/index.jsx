@@ -31,7 +31,8 @@ export default function Home() {
   const [connecting, setConnecting] = useState(false);
   const [searchOrder, setSearchOrder] = useState('')
   const [selectedModel, setSelectedModel] = useState('');
-  const [applications, setApplications] = useState({});
+  const [applications, setApplications] = useState([]);
+  const [applicationCount, setApplicationCount] = useState({});
   const [page, setPage] = useState('');
   const [error, setError] = useState('');
   const { addToast } = useToasts();
@@ -154,6 +155,19 @@ export default function Home() {
     }
   }, [dataModels, host]);
 
+  function applicationResultToObj(application) {
+    return {
+      applicationid: application[0],
+      name: application[1],
+      image_url: application[2],
+      description: application[3],
+      userid: application[4],
+      app_url: application[5],
+      last_updated: application[6],
+      modelids: application[7]
+    }
+  }
+
   useEffect(() => {
     if(dataModels && host) {
       (async() => {
@@ -162,17 +176,24 @@ export default function Home() {
           let j = await r.json();
 
           if(j.success) {
-            let _applications = {};
+            let _applicationCount = {};
+            let _applications = [];
             for(let info of j.data) {
-              let modelid = info[7];
-              if(_applications[modelid]) {
-                _applications[modelid]++;
+              let applicationData = applicationResultToObj(info);
+
+              let modelids = applicationData.modelids;
+              for(let modelid of modelids) {
+                if(_applicationCount[modelid]) {
+                  _applicationCount[modelid]++;
+                }
+                else {
+                  _applicationCount[modelid] = 1;
+                }
               }
-              else {
-                _applications[modelid] = 1;
-              }
+              _applications.push(applicationData);
             }
             setApplications(_applications);
+            setApplicationCount(_applicationCount);
           }
           else {
             console.log(j.reason);
@@ -379,7 +400,7 @@ export default function Home() {
     e.preventDefault();
   }
 
-  function displayBasicModelInfo(modelid, version, author, tags, monthly_downloads, npm_score, userModelInfo, applications) {
+  function displayBasicModelInfo(modelid, version, author, tags, monthly_downloads, npm_score, userModelInfo, applicationCount) {
     let npmLink = `https://www.npmjs.com/package/{package_name}`;
     let packageName = `@datamodels/${modelid}`;
 
@@ -414,7 +435,7 @@ export default function Home() {
       </div>
       <div className={styles.dataModelResultRow}>
         <div className={styles.dataModelResultTitle}>Applications</div>
-        <div className={styles.dataModelResultValue}>{applications}</div>
+        <div className={styles.dataModelResultValue}>{applicationCount}</div>
       </div>
     </div>
   }
@@ -440,8 +461,8 @@ export default function Home() {
       }
 
       let numApplications = 0;
-      if(applications && applications[id]) {
-        numApplications = applications[id];
+      if(applicationCount && applicationCount[id]) {
+        numApplications = applicationCount[id];
       }
 
       let monthly_downloads = 0;
@@ -521,7 +542,9 @@ export default function Home() {
   }
 
   function getApplicationsPage() {
-    return <Applications goBack={goBack} host={host} ceramic={ceramic} toast={toast} />
+    return <Applications goBack={goBack} host={host} ceramic={ceramic} toast={toast} 
+                         applications={applications} setApplications={setApplications} 
+                         applicationResultToObj={applicationResultToObj} />
   }
 
   function getPageID() {

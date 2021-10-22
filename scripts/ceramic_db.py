@@ -259,6 +259,22 @@ class CeramicDB:
             WHERE applications.application_id = application_models.application_id
         """)
         rows = c.fetchall()
+
+        # Convert modelids from rows into array with single application record
+        model_list_rows = {}
+        for row in rows:
+            _row = list(row)
+            app_id = _row[0]
+            model_id = _row[7]
+
+            if app_id in model_list_rows:
+                model_list_rows[app_id][7].append(model_id)
+            else:
+                model_list_rows[app_id] = _row
+                model_list_rows[app_id][7] = [model_id]
+        
+        rows = list(model_list_rows.values())
+
         return rows
 
     def add_application(self, name, image_url, description, userid, app_url, data_model_ids):
