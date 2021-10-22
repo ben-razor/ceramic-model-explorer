@@ -18,9 +18,13 @@ function Applications(props) {
     const [dataModelIDs, setDataModelIDs] = useState('');
     const [error, setError] = useState('');
 
+    let userID;
+    if(ceramic) {
+        userID = ceramic.did.id;
+    }
+
     function submitApplication(e) {
         if(ceramic) {
-            let userID = ceramic.did.id;
 
             (async() => {
                 try {
@@ -122,33 +126,56 @@ function Applications(props) {
     function displayApplications(applications) {
         let apps = [];
         for(let app of applications) {
-            let rows = <div className={styles.applicationResult} key={app.applicationid}>
-                <div className={styles.dataModelResultRow}>
-                    <div className={styles.dataModelResultTitle}>
-                        Name
-                    </div>
-                    <div className={styles.dataModelResultValue}>
-                        {app.name}
-                    </div>
-                </div>
-                <div className={styles.dataModelResultRow}>
-                    <div className={styles.dataModelResultTitle}>
-                        Description 
-                    </div>
-                    <div className={styles.dataModelResultValue}>
-                        {app.description}
-                    </div>
-                </div>
-                <div className={styles.dataModelResultRow}>
-                    <div className={styles.dataModelResultTitle}>
-                        Models 
-                    </div>
-                    <div className={styles.dataModelResultValue}>
-                        {app.modelids.join(', ')}
-                    </div>
-                </div>
-            </div>
 
+            let editable = false;
+            if(userID === app.userid) {
+                editable = true;
+            }
+
+            let imageUrl = app.image_url || '/no-image-1.png';
+
+            let rows = 
+            <form onSubmit={e => editApplication(e)}>
+                <div className={styles.applicationResult} key={app.applicationid}>
+                    <div className={styles.applicationImageContainer}>
+                        <img className={styles.applicationImage} src={imageUrl} />
+                    </div>
+                    <div className={styles.applicationInfo}>
+                        <div className={styles.dataModelResultRow}>
+                            <div className={styles.dataModelResultTitle}>
+                                Name
+                            </div>
+                            <div className={styles.dataModelResultValue}>
+                                { editable ? 
+                                    <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Application name" required /> :
+                                    app.name
+                                }
+                            </div>
+                        </div>
+                        <div className={styles.dataModelResultRow}>
+                            <div className={styles.dataModelResultTitle}>
+                                Description 
+                            </div>
+                            <div className={styles.dataModelResultValue}>
+                                {app.description}
+                            </div>
+                        </div>
+                        <div className={styles.dataModelResultRow}>
+                            <div className={styles.dataModelResultTitle}>
+                                Models 
+                            </div>
+                            <div className={styles.dataModelResultValue}>
+                                {app.modelids.join(', ')}
+                            </div>
+                        </div>
+                    </div>
+                    { editable &&
+                        <div>
+                            <input type="submit" name="submit" value="Submit" />
+                        </div>
+                    }
+                </div>
+            </form>
             apps.push(rows)
         }
         return apps;
@@ -164,6 +191,7 @@ function Applications(props) {
                 Submit links to applications that use Ceramic DataModels.
                 {getApplicationForm()}
                 <div>
+                    <h5>All Applications</h5>
                     { displayApplications(applications) }
                 </div>
             </div>
