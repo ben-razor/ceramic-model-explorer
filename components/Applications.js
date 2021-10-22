@@ -119,6 +119,41 @@ function Applications(props) {
 
     }
 
+    function displayApplications(applications) {
+        let apps = [];
+        for(let app of applications) {
+            let rows = <div className={styles.applicationResult} key={app.applicationid}>
+                <div className={styles.dataModelResultRow}>
+                    <div className={styles.dataModelResultTitle}>
+                        Name
+                    </div>
+                    <div className={styles.dataModelResultValue}>
+                        {app.name}
+                    </div>
+                </div>
+                <div className={styles.dataModelResultRow}>
+                    <div className={styles.dataModelResultTitle}>
+                        Description 
+                    </div>
+                    <div className={styles.dataModelResultValue}>
+                        {app.description}
+                    </div>
+                </div>
+                <div className={styles.dataModelResultRow}>
+                    <div className={styles.dataModelResultTitle}>
+                        Models 
+                    </div>
+                    <div className={styles.dataModelResultValue}>
+                        {app.modelids.join(', ')}
+                    </div>
+                </div>
+            </div>
+
+            apps.push(rows)
+        }
+        return apps;
+    }
+
     return <div className={styles.applicationsPanel}>
         <button onClick={e => goBack()}>&lArr; Back</button>
         <div className={styles.csnSubPage}>
@@ -129,7 +164,7 @@ function Applications(props) {
                 Submit links to applications that use Ceramic DataModels.
                 {getApplicationForm()}
                 <div>
-                    { JSON.stringify(applications) }
+                    { displayApplications(applications) }
                 </div>
             </div>
         </div>

@@ -486,3 +486,8 @@
     padding: 0.5em;
 }
 
+.applicationResult {
+    border: 1px solid hsl(13deg, 100%, 40%);
+    border-radius: 1em;
+    padding: 0.5em;
+}
