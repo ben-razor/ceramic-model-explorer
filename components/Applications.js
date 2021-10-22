@@ -23,7 +23,6 @@ function Applications(props) {
         userID = ceramic.did.id;
     }
 
-    console.log(userID)
     function submitApplication(e) {
         if(ceramic) {
 
