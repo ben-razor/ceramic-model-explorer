@@ -40,6 +40,7 @@ export default function Home() {
   const [ceramic, setCeramic] = useState();
   const [ethAddresses, setEthAddresses] = useState();
   const [ethereum, setEthereum] = useState();
+  const [jws, setJWS] = useState();
 
   useEffect(() => {
     let _host = 'https://benrazor.net:8878';
@@ -224,6 +225,16 @@ export default function Home() {
           const provider = await threeIdConnect.getDidProvider();
           newCeramic.did.setProvider(provider);
           await newCeramic.did.authenticate();
+
+          let _jws = await did.createJWS({ userid: did.id });
+
+          try {
+            let jwsObj = JSON.parse(JSON.stringify(_jws));
+            setJWS(jwsObj);
+          }
+          catch(e) {
+            console.log(e);
+          }
 
           setCeramic(newCeramic);
           setConnecting(false);
