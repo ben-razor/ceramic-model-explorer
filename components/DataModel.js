@@ -23,7 +23,7 @@ function DataModel(props) {
 
                 let j = await r.json();
                 // TODO: Only get one schema at the moment
-                setModelInfo(modelTupleToObj(j.data[0]));
+                setModelInfo(j.data[0]);
             })()
             
             let _name = selectedModel.split('-').map(x => x[0].toUpperCase() + x.slice(1)).join(' ');
@@ -31,20 +31,6 @@ function DataModel(props) {
 
         }
     }, [selectedModel]);
-
-    function modelTupleToObj(modelTuple) {
-        return {
-            'model_id': modelTuple[0],
-            'version': modelTuple[1],
-            'author': modelTuple[2],
-            'tags': modelTuple[3],
-            'readme_md': modelTuple[4],
-            'package_json': modelTuple[5],
-            'schema_path': modelTuple[6],
-            'schema_name': modelTuple[7],
-            'schema': modelTuple[8]
-        }
-    }
 
     function prettyPrintSchema(schema) {
         let content = 'Schema not loaded';

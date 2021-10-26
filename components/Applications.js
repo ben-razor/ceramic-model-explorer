@@ -158,7 +158,7 @@ function Applications(props) {
                                 Models 
                             </div>
                             <div className={styles.dataModelResultValue}>
-                                {app.modelids.join(', ')}
+                                {app.modelid.join(', ')}
                             </div>
                         </div>
                     </div>
