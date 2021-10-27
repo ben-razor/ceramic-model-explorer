@@ -552,7 +552,7 @@ export default function Home() {
   function getApplicationsPage() {
     return <Applications goBack={goBack} host={host} ceramic={ceramic} toast={toast} 
                          applications={applications} setApplications={setApplications} 
-                         applicationResultToObj={applicationResultToObj} />
+                         applicationResultToObj={applicationResultToObj} jws={jws} />
   }
 
   function getPageID() {
