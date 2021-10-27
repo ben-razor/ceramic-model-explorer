@@ -491,6 +491,7 @@
     border: 1px solid hsl(13deg, 100%, 40%);
     border-radius: 1em;
     padding: 0.5em;
+    margin-bottom: 0.5em;
 }
 
 .applicationImageContainer {
@@ -500,11 +501,12 @@
 .applicationImage {
     width: 100%;
     padding: 0.5em;
-    max-width: 8em;
+    max-width: 7em;
 }
 
 .applicationInfo {
     width: 80%;
+    margin-top: 0.25em;
 }
 
 .applicationInput {
