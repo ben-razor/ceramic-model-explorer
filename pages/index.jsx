@@ -336,7 +336,8 @@ export default function Home() {
             userid: userID,
             modelid: modelid,
             rating: rating,
-            comment: ''
+            comment: '',
+            jws: jws
           })
         });
 
@@ -351,6 +352,7 @@ export default function Home() {
           setOwnRatings(ratingTuplesToObj(j.data));
         }
         else {
+          toast('Error rating model: ' + j.reason, 'error');
           console.log(j.reason);
         }
       })();
