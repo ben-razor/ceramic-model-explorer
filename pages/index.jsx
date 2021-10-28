@@ -548,7 +548,7 @@ export default function Home() {
   }
 
   function getUserModelsPage() {
-    return <UserModels goBack={goBack} host={host} ceramic={ceramic} toast={toast} />
+    return <UserModels goBack={goBack} host={host} ceramic={ceramic} toast={toast} jws={jws} />
   }
 
   function getApplicationsPage() {

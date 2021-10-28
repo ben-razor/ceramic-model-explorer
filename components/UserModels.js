@@ -7,6 +7,7 @@ function UserModels(props) {
     const host = props.host;
     const ceramic = props.ceramic;
     const toast = props.toast;
+    const jws = props.jws;
     
     const [name, setName] = useState('');
     const [npmPackage, setNpmPackage] = useState('');
@@ -29,7 +30,8 @@ function UserModels(props) {
                             userid: userID,
                             modelid: name,
                             npmPackage: npmPackage,
-                            repoURL: repoURL
+                            repoURL: repoURL,
+                            jws: jws
                         })
                     });
 
@@ -39,8 +41,8 @@ function UserModels(props) {
                         toast('Great! Your model was added')
                     }
                     else {
-                        toast('Error adding model: ' + j.error);
-                        console.log('User model error', j.error);
+                        toast('Error adding model: ' + j.reason);
+                        console.log('User model error', j.reason);
                     }
                 }
                 catch(e) {
