@@ -83,7 +83,9 @@ function UserModels(props) {
                                 NPM Package 
                             </div>
                             <div className={styles.dataModelResultValue}>
-                                {model.packageid}
+                                <a href={'https://www.npmjs.com/package/' + model.packageid} target="_blank" rel="noreferrer">
+                                    {model.packageid}
+                                </a>
                             </div>
                         </div>
                         <div className={styles.dataModelResultRow}>
@@ -91,7 +93,7 @@ function UserModels(props) {
                                 Repository URL 
                             </div>
                             <div className={styles.dataModelResultValue}>
-                                {model.repo_url}
+                                <a href={model.repo_url} target="_blank" rel="noreferrer">{model.repo_url}</a>
                             </div>
                         </div>
                     </div>
