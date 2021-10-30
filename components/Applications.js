@@ -144,7 +144,9 @@ function Applications(props) {
                                 Name
                             </div>
                             <div className={styles.dataModelResultValue}>
-                                {app.name}
+                                <a href={app.app_url} target="_blank" rel="noreferrer">
+                                    {app.name}
+                                </a>
                             </div>
                         </div>
                         <div className={styles.dataModelResultRow}>
@@ -183,6 +185,9 @@ function Applications(props) {
                 <div>
                     <h5>All Applications</h5>
                     { displayApplications(applications) }
+                </div>
+                <div>
+                    {JSON.stringify(applications)}
                 </div>
             </div>
         </div>
