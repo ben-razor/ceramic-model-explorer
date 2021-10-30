@@ -186,9 +186,6 @@ function Applications(props) {
                     <h5>All Applications</h5>
                     { displayApplications(applications) }
                 </div>
-                <div>
-                    {JSON.stringify(applications)}
-                </div>
             </div>
         </div>
     </div>

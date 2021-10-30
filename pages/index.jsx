@@ -15,8 +15,9 @@ import DataModel from '../components/DataModel'
 import UserModels from '../components/UserModels'
 
 import { DID } from 'dids'
-const API_URL = 'https://ceramic-clay.3boxlabs.com';
+let API_URL = process.env.CERAMIC_URL || 'https://ceramic-clay.3boxlabs.com';
 const TOAST_TIMEOUT = 5000;
+let CME_SERVER_PORT = process.env.CME_SERVER_PORT || 8878;
 
 export default function Home() {
 
@@ -44,9 +45,9 @@ export default function Home() {
   const [jws, setJWS] = useState();
 
   useEffect(() => {
-    let _host = 'https://benrazor.net:8878';
+    let _host = `https://benrazor.net:${CME_SERVER_PORT}`;
     if(isLocal()) {
-        _host = `http://localhost:8878`;
+        _host = `http://localhost:${CME_SERVER_PORT}`;
     }
 
     setHost(_host);
