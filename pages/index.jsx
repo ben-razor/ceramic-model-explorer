@@ -33,6 +33,7 @@ export default function Home() {
   const [selectedModel, setSelectedModel] = useState('');
   const [applications, setApplications] = useState([]);
   const [applicationCount, setApplicationCount] = useState({});
+  const [userModelAdding, setUserModelAdding] = useState(false);
   const [page, setPage] = useState('');
   const [error, setError] = useState('');
   const { addToast } = useToasts();
@@ -64,6 +65,7 @@ export default function Home() {
 
           setDataModels(j.data);
           setMatchingDataModels(j.data);
+          setUserModelAdding(false);
 
           let rStats = await fetch(host + '/api/stats');
           let jStats = await rStats.json();
@@ -91,7 +93,7 @@ export default function Home() {
         }
       })();
     }
-  }, [host]);
+  }, [host, userModelAdding]);
 
   useEffect(() => {
     if(ceramic && dataModels) {
@@ -548,7 +550,8 @@ export default function Home() {
   }
 
   function getUserModelsPage() {
-    return <UserModels goBack={goBack} host={host} ceramic={ceramic} toast={toast} jws={jws} />
+    return <UserModels goBack={goBack} host={host} ceramic={ceramic} toast={toast} jws={jws} 
+                       userModels={userModels} setUserModelAdding={setUserModelAdding} />
   }
 
   function getApplicationsPage() {
