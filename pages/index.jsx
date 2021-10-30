@@ -17,7 +17,7 @@ import UserModels from '../components/UserModels'
 import { DID } from 'dids'
 let API_URL = process.env.CERAMIC_URL || 'https://ceramic-clay.3boxlabs.com';
 const TOAST_TIMEOUT = 5000;
-let CME_SERVER_PORT = process.env.CME_SERVER_PORT || 8878;
+let CME_SERVER_PORT = process.env.CME_SERVER_PORT || 8879;
 
 export default function Home() {
 
@@ -47,7 +47,7 @@ export default function Home() {
   useEffect(() => {
     let _host = `https://benrazor.net:${CME_SERVER_PORT}`;
     if(isLocal()) {
-        _host = `http://localhost:${CME_SERVER_PORT}`;
+        _host = `https://localhost:${CME_SERVER_PORT}`;
     }
 
     setHost(_host);
