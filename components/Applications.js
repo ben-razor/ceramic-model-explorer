@@ -10,6 +10,7 @@ function Applications(props) {
     const applications = props.applications;
     const setApplications = props.setApplications;
     const applicationResultToObj = props.applicationResultToObj;
+    const jws = props.jws;
 
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
@@ -40,7 +41,8 @@ function Applications(props) {
                             description: description,
                             userid: userID,
                             appURL: appURL,
-                            dataModelIDs: dataModelIDs
+                            dataModelIDs: dataModelIDs,
+                            jws: jws
                         })
                     });
 
@@ -50,8 +52,8 @@ function Applications(props) {
                         toast('Great! Your application was added')
                     }
                     else {
-                        toast('Error adding application: ' + j.error);
-                        console.log('Add application error', j.error);
+                        toast('Error adding application: ' + j.reason);
+                        console.log('Add application error', j.reason);
                     }
                 }
                 catch(e) {
@@ -142,7 +144,9 @@ function Applications(props) {
                                 Name
                             </div>
                             <div className={styles.dataModelResultValue}>
-                                {app.name}
+                                <a href={app.app_url} target="_blank" rel="noreferrer">
+                                    {app.name}
+                                </a>
                             </div>
                         </div>
                         <div className={styles.dataModelResultRow}>
@@ -158,7 +162,7 @@ function Applications(props) {
                                 Models 
                             </div>
                             <div className={styles.dataModelResultValue}>
-                                {app.modelids.join(', ')}
+                                {app.modelid.join(', ')}
                             </div>
                         </div>
                     </div>

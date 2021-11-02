@@ -7,6 +7,9 @@ function UserModels(props) {
     const host = props.host;
     const ceramic = props.ceramic;
     const toast = props.toast;
+    const jws = props.jws;
+    const setUserModelAdding = props.setUserModelAdding;
+    const userModels = props.userModels;
     
     const [name, setName] = useState('');
     const [npmPackage, setNpmPackage] = useState('');
@@ -29,18 +32,20 @@ function UserModels(props) {
                             userid: userID,
                             modelid: name,
                             npmPackage: npmPackage,
-                            repoURL: repoURL
+                            repoURL: repoURL,
+                            jws: jws
                         })
                     });
 
                     let j = await r.json();
 
                     if(j.success) {
-                        toast('Great! Your model was added')
+                        toast('Great! Your model was added');
+                        setUserModelAdding(true);
                     }
                     else {
-                        toast('Error adding model: ' + j.error);
-                        console.log('User model error', j.error);
+                        toast('Error adding model: ' + j.reason);
+                        console.log('User model error', j.reason);
                     }
                 }
                 catch(e) {
@@ -54,6 +59,49 @@ function UserModels(props) {
         }
 
         e.preventDefault();
+    }
+
+    function displayUserModels(userModels) {
+        let apps = [];
+        let i = 0;
+        for(let [modelid, model] of Object.entries(userModels)) {
+
+            let rows = 
+            <form onSubmit={e => editApplication(e)} key={modelid}>
+                <div className={styles.userModelResult}>
+                    <div className={styles.userModelInfo}>
+                        <div className={styles.dataModelResultRow}>
+                            <div className={styles.dataModelResultTitle}>
+                                Name
+                            </div>
+                            <div className={styles.dataModelResultValue}>
+                                {modelid}
+                            </div>
+                        </div>
+                        <div className={styles.dataModelResultRow}>
+                            <div className={styles.dataModelResultTitle}>
+                                NPM Package 
+                            </div>
+                            <div className={styles.dataModelResultValue}>
+                                <a href={'https://www.npmjs.com/package/' + model.packageid} target="_blank" rel="noreferrer">
+                                    {model.packageid}
+                                </a>
+                            </div>
+                        </div>
+                        <div className={styles.dataModelResultRow}>
+                            <div className={styles.dataModelResultTitle}>
+                                Repository URL 
+                            </div>
+                            <div className={styles.dataModelResultValue}>
+                                <a href={model.repo_url} target="_blank" rel="noreferrer">{model.repo_url}</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            apps.push(rows)
+        }
+        return apps;
     }
 
     return <div className={styles.userModelsPanel}>
@@ -99,6 +147,10 @@ function UserModels(props) {
                         </div>
                     </div>
                 </form>
+                <div>
+                    <h5>All User Models</h5>
+                    { displayUserModels(userModels) }
+                </div>
             </div>
         </div>
     </div>

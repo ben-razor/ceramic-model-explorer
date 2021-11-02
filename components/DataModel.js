@@ -9,6 +9,9 @@ function DataModel(props) {
     let displayBasicModelInfo = props.displayBasicModelInfo;
     let goBack = props.goBack;
     let host = props.host;
+    let modelStats = props.modelStats;
+    let userModels = props.userModels;
+    let applicationCount = props.applicationCount;
 
     const [selectedTab, setSelectedTab] = useState('readme');
     const [modelInfo, setModelInfo] = useState({});
@@ -23,7 +26,7 @@ function DataModel(props) {
 
                 let j = await r.json();
                 // TODO: Only get one schema at the moment
-                setModelInfo(modelTupleToObj(j.data[0]));
+                setModelInfo(j.data[0]);
             })()
             
             let _name = selectedModel.split('-').map(x => x[0].toUpperCase() + x.slice(1)).join(' ');
@@ -31,20 +34,6 @@ function DataModel(props) {
 
         }
     }, [selectedModel]);
-
-    function modelTupleToObj(modelTuple) {
-        return {
-            'model_id': modelTuple[0],
-            'version': modelTuple[1],
-            'author': modelTuple[2],
-            'tags': modelTuple[3],
-            'readme_md': modelTuple[4],
-            'package_json': modelTuple[5],
-            'schema_path': modelTuple[6],
-            'schema_name': modelTuple[7],
-            'schema': modelTuple[8]
-        }
-    }
 
     function prettyPrintSchema(schema) {
         let content = 'Schema not loaded';
@@ -55,6 +44,24 @@ function DataModel(props) {
             console.log(e);
         }
         return content;
+    }
+
+    let id = selectedModel;
+    let monthly_downloads = 0;
+    let npm_score = 0;
+    if(modelStats[id]) {
+      monthly_downloads = modelStats[id].monthly_downloads || 0;
+      npm_score = modelStats[id].npm_score || 0;
+    }
+
+    let userModelInfo = {};
+    if(userModels && userModels[id]) {
+        userModelInfo = userModels[id];
+    }
+
+    let numApplicationsDisp = 0;
+    if(applicationCount && applicationCount[id]) {
+      numApplicationsDisp = applicationCount[id];
     }
 
     return <div className={styles.dataModelPanel}>
@@ -73,7 +80,9 @@ function DataModel(props) {
                 </div>
                 <div className={styles.csnTabContent}>
                     <div className={styles.csnTabModelInfo} style={{display: !selectedTab ? 'block' : 'none'}}>
-                        {displayBasicModelInfo(selectedModel, modelInfo.version, modelInfo.author, modelInfo.tags)}
+                        {displayBasicModelInfo(selectedModel, modelInfo.version, modelInfo.author, 
+                                               modelInfo.keywords, monthly_downloads, npm_score, userModelInfo,
+                                               numApplicationsDisp)}
                         <div className={styles.csnSuggestionsPanel}>
                             <div className={styles.csnSuggestionsTitle}>
                                 Model Improvements 
@@ -91,14 +100,14 @@ function DataModel(props) {
                     </div>
                     <div className={styles.csnTabSchema} style={{display: selectedTab === 'schema' ? 'block' : 'none'}}>
                         <div className={styles.csnSchemaViewer}>
-                            { modelInfo.schema && prettyPrintSchema(modelInfo.schema)}
+                            { modelInfo.schema_json && prettyPrintSchema(modelInfo.schema_json)}
                         </div>
                     </div>
                     <div className={styles.csnTabSchema} style={{display: selectedTab === 'readme' ? 'block' : 'none'}}>
                         <div className={styles.csnMarkdownViewer}>
-                            { modelInfo.readme_md && 
+                            { modelInfo.readme && 
                                 <ReactMarkdown>
-                                    { modelInfo.readme_md }
+                                    { modelInfo.readme }
                                 </ReactMarkdown>
                             }
                         </div>

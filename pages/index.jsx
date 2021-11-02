@@ -15,8 +15,9 @@ import DataModel from '../components/DataModel'
 import UserModels from '../components/UserModels'
 
 import { DID } from 'dids'
-const API_URL = 'https://ceramic-clay.3boxlabs.com';
+let API_URL = process.env.CERAMIC_URL || 'https://ceramic-clay.3boxlabs.com';
 const TOAST_TIMEOUT = 5000;
+let CME_SERVER_PORT = process.env.CME_SERVER_PORT || 8879;
 
 export default function Home() {
 
@@ -33,6 +34,7 @@ export default function Home() {
   const [selectedModel, setSelectedModel] = useState('');
   const [applications, setApplications] = useState([]);
   const [applicationCount, setApplicationCount] = useState({});
+  const [userModelAdding, setUserModelAdding] = useState(false);
   const [page, setPage] = useState('');
   const [error, setError] = useState('');
   const { addToast } = useToasts();
@@ -43,9 +45,9 @@ export default function Home() {
   const [jws, setJWS] = useState();
 
   useEffect(() => {
-    let _host = 'https://benrazor.net:8878';
+    let _host = `https://benrazor.net:${CME_SERVER_PORT}`;
     if(isLocal()) {
-        _host = `http://localhost:8878`;
+        _host = `https://localhost:${CME_SERVER_PORT}`;
     }
 
     setHost(_host);
@@ -64,17 +66,18 @@ export default function Home() {
 
           setDataModels(j.data);
           setMatchingDataModels(j.data);
+          setUserModelAdding(false);
 
           let rStats = await fetch(host + '/api/stats');
           let jStats = await rStats.json();
           let stats = {}
           if(jStats.success) {
             for(let row of jStats.data) {
-              let modelid = row[0];
-              let monthly_downloads = row[1];
-              let npm_score = row[2];
-              let npm_quality = row[3];
-              let num_streams = row[4];
+              let modelid = row.modelid;
+              let monthly_downloads = row.monthly_downloads;
+              let npm_score = row.npm_score;
+              let npm_quality = row.npm_quality;
+              let num_streams = row.num_streams;
               stats[modelid] = {
                 monthly_downloads: monthly_downloads,
                 npm_score: npm_score,
@@ -91,7 +94,7 @@ export default function Home() {
         }
       })();
     }
- }, [host]);
+  }, [host, userModelAdding]);
 
   useEffect(() => {
     if(ceramic && dataModels) {
@@ -128,12 +131,12 @@ export default function Home() {
           if(j.success) {
             let _userModels = {};
             for(let info of j.data) {
-              let modelid = info[0];
-              let userid = info[1];
-              let packageid = info[2];
-              let repo_url = info[3];
-              let status = info[4];
-              let updated = info[5];
+              let modelid = info.modelid;
+              let userid = info.userid;
+              let packageid = info.npm_package;
+              let repo_url = info.repo_url;
+              let status = info.status;
+              let updated = info.last_updated;
 
               _userModels[modelid] = {
                 'userid': userid,
@@ -158,14 +161,14 @@ export default function Home() {
 
   function applicationResultToObj(application) {
     return {
-      applicationid: application[0],
-      name: application[1],
-      image_url: application[2],
-      description: application[3],
-      userid: application[4],
-      app_url: application[5],
-      last_updated: application[6],
-      modelids: application[7]
+      applicationid: application.applicationid,
+      name: application.name,
+      image_url: application.image_url,
+      description: application.description,
+      userid: application.userid,
+      app_url: application.app_url,
+      last_updated: application.last_updated,
+      modelids: application.modelid
     }
   }
 
@@ -180,9 +183,9 @@ export default function Home() {
             let _applicationCount = {};
             let _applications = [];
             for(let info of j.data) {
-              let applicationData = applicationResultToObj(info);
+              let applicationData = info;
 
-              let modelids = applicationData.modelids;
+              let modelids = applicationData.modelid;
               for(let modelid of modelids) {
                 if(_applicationCount[modelid]) {
                   _applicationCount[modelid]++;
@@ -253,12 +256,10 @@ export default function Home() {
     if(dataModels) {
       let _dataModels = [...dataModels];
       let _matchingDataModels = _dataModels.filter(model => {
-        let id = model[0].toLowerCase();
-        let name = model[0].split('-').map(x => x[0].toUpperCase() + x.slice(1)).join(' ').toLowerCase();
-        let version = model[1].toLowerCase();
-        let author = model[2].toLowerCase();
-        let tags = model[3].toLowerCase();
-        let readme = model[4].toLowerCase();
+        let id = model.modelid.toLowerCase();
+        let name = model.modelid.split('-').map(x => x[0].toUpperCase() + x.slice(1)).join(' ').toLowerCase();
+        let tags = model.keywords.toLowerCase();
+        let readme = model.readme.toLowerCase();
         let lcSearch = search.toLowerCase();
 
         return id.includes(lcSearch) || name.includes(lcSearch) || tags.includes(lcSearch) || readme.includes(lcSearch);
@@ -270,8 +271,8 @@ export default function Home() {
         }
         else if(searchOrder === 'highest-rated') {
           _matchingDataModels.sort((a, b) => {
-            let id1 = a[0];
-            let id2 = b[0];
+            let id1 = a.modelid;
+            let id2 = b.modelid;
             let rating1 = modelRatings[id1] || 0;
             let rating2 = modelRatings[id2] || 0;
             return rating2 - rating1;
@@ -293,8 +294,8 @@ export default function Home() {
 
             let _modelRatings = {};
             for(let ratingInfo of j.data) {
-              let modelid = ratingInfo[0];
-              let rating = ratingInfo[1];
+              let modelid = ratingInfo.modelid;
+              let rating = ratingInfo.total;
               _modelRatings[modelid] = rating;
             }
             setModelRatings(_modelRatings);
@@ -338,7 +339,8 @@ export default function Home() {
             userid: userID,
             modelid: modelid,
             rating: rating,
-            comment: ''
+            comment: '',
+            jws: jws
           })
         });
 
@@ -353,6 +355,7 @@ export default function Home() {
           setOwnRatings(ratingTuplesToObj(j.data));
         }
         else {
+          toast('Error rating model: ' + j.reason, 'error');
           console.log(j.reason);
         }
       })();
@@ -365,10 +368,10 @@ export default function Home() {
   function ratingTuplesToObj(ratingTuples) {
     let ratingObj = {};
     for(let t of ratingTuples) {
-      let userid = t[0];
-      let modelid = t[1];
-      let rating = t[2];
-      let comment = t[3];
+      let userid = t.userid;
+      let modelid = t.modelid;
+      let rating = t.rating;
+      let comment = t.comment;
       
       ratingObj[modelid] = {
         userid: userid,
@@ -455,13 +458,12 @@ export default function Home() {
     let resultsRows = [];
 
     for(let model of dataModels) {
-      let id = model[0];
-      let name = model[0].split('-').map(x => x[0].toUpperCase() + x.slice(1)).join(' ');
-      let version = model[1];
-      let author = model[2];
-      let tags = model[3];
-      let packageJson = model[7]
-      let packageName = id;
+      let id = model.modelid;
+      let name = model.modelid.split('-').map(x => x[0].toUpperCase() + x.slice(1)).join(' ');
+      let version = model.version;
+      let author = model.author;
+      let tags = model.keywords;
+      let packageName;
       let userModelInfo;
 
       if(userModels && userModels[id]) {
@@ -545,17 +547,19 @@ export default function Home() {
 
   function getDataModelPage() {
     return <DataModel setSelectedModel={setSelectedModel} selectedModel={selectedModel} host={host} 
-                displayBasicModelInfo={displayBasicModelInfo} goBack={goBack} />
+                displayBasicModelInfo={displayBasicModelInfo} goBack={goBack} 
+                modelStats={modelStats} userModels={userModels} applicationCount={applicationCount} />
   }
 
   function getUserModelsPage() {
-    return <UserModels goBack={goBack} host={host} ceramic={ceramic} toast={toast} />
+    return <UserModels goBack={goBack} host={host} ceramic={ceramic} toast={toast} jws={jws} 
+                       userModels={userModels} setUserModelAdding={setUserModelAdding} />
   }
 
   function getApplicationsPage() {
     return <Applications goBack={goBack} host={host} ceramic={ceramic} toast={toast} 
                          applications={applications} setApplications={setApplications} 
-                         applicationResultToObj={applicationResultToObj} />
+                         applicationResultToObj={applicationResultToObj} jws={jws} />
   }
 
   function getPageID() {
