@@ -547,7 +547,8 @@ export default function Home() {
 
   function getDataModelPage() {
     return <DataModel setSelectedModel={setSelectedModel} selectedModel={selectedModel} host={host} 
-                displayBasicModelInfo={displayBasicModelInfo} goBack={goBack} />
+                displayBasicModelInfo={displayBasicModelInfo} goBack={goBack} 
+                modelStats={modelStats} userModels={userModels} applicationCount={applicationCount} />
   }
 
   function getUserModelsPage() {

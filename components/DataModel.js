@@ -9,6 +9,9 @@ function DataModel(props) {
     let displayBasicModelInfo = props.displayBasicModelInfo;
     let goBack = props.goBack;
     let host = props.host;
+    let modelStats = props.modelStats;
+    let userModels = props.userModels;
+    let applicationCount = props.applicationCount;
 
     const [selectedTab, setSelectedTab] = useState('readme');
     const [modelInfo, setModelInfo] = useState({});
@@ -43,6 +46,24 @@ function DataModel(props) {
         return content;
     }
 
+    let id = selectedModel;
+    let monthly_downloads = 0;
+    let npm_score = 0;
+    if(modelStats[id]) {
+      monthly_downloads = modelStats[id].monthly_downloads || 0;
+      npm_score = modelStats[id].npm_score || 0;
+    }
+
+    let userModelInfo = {};
+    if(userModels && userModels[id]) {
+        userModelInfo = userModels[id];
+    }
+
+    let numApplicationsDisp = 0;
+    if(applicationCount && applicationCount[id]) {
+      numApplicationsDisp = applicationCount[id];
+    }
+
     return <div className={styles.dataModelPanel}>
         <button onClick={e => goBack()}>&lArr; Back</button>
         <div className={styles.dataModelResult}>
@@ -59,7 +80,9 @@ function DataModel(props) {
                 </div>
                 <div className={styles.csnTabContent}>
                     <div className={styles.csnTabModelInfo} style={{display: !selectedTab ? 'block' : 'none'}}>
-                        {displayBasicModelInfo(selectedModel, modelInfo.version, modelInfo.author, modelInfo.tags)}
+                        {displayBasicModelInfo(selectedModel, modelInfo.version, modelInfo.author, 
+                                               modelInfo.keywords, monthly_downloads, npm_score, userModelInfo,
+                                               numApplicationsDisp)}
                         <div className={styles.csnSuggestionsPanel}>
                             <div className={styles.csnSuggestionsTitle}>
                                 Model Improvements 
@@ -77,14 +100,14 @@ function DataModel(props) {
                     </div>
                     <div className={styles.csnTabSchema} style={{display: selectedTab === 'schema' ? 'block' : 'none'}}>
                         <div className={styles.csnSchemaViewer}>
-                            { modelInfo.schema && prettyPrintSchema(modelInfo.schema)}
+                            { modelInfo.schema_json && prettyPrintSchema(modelInfo.schema_json)}
                         </div>
                     </div>
                     <div className={styles.csnTabSchema} style={{display: selectedTab === 'readme' ? 'block' : 'none'}}>
                         <div className={styles.csnMarkdownViewer}>
-                            { modelInfo.readme_md && 
+                            { modelInfo.readme && 
                                 <ReactMarkdown>
-                                    { modelInfo.readme_md }
+                                    { modelInfo.readme }
                                 </ReactMarkdown>
                             }
                         </div>
