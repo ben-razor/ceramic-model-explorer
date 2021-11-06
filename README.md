@@ -10,7 +10,7 @@ View the [Documentation](https://ceramic-explore-docs.web.app/)
 
 For the [Ceramic Network](https://ceramic.network/) task **Create A System For Discovery And/Or Curation Of DataModels** in the [Gitcoin Hackathon](https://gitcoin.co/issue/ceramicnetwork/ceramic/82/100026725).
 
-View the repository for the [ExpressJS Backend Server](https://github.com/ben-razor/ceramic-model-explorer-server).
+View the repository for the [ExpressJS Backend Server](https://github.com/ben-razor/ceramic-data-model-explorer-server).
 
 ## About
 
