@@ -415,8 +415,8 @@ export default function Home() {
   }
 
   function displayBasicModelInfo(modelid, version, author, tags, monthly_downloads, npm_score, userModelInfo, applicationCount) {
-    let npmLink = `https://www.npmjs.com/package/{package_name}`;
     let packageName = `@datamodels/${modelid}`;
+    let npmLink = `https://www.npmjs.com/package/${packageName}`;
 
     if(userModelInfo) {
       packageName = userModelInfo.packageid;
