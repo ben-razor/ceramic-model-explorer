@@ -45,7 +45,7 @@ export default function Home() {
   const [jws, setJWS] = useState();
 
   useEffect(() => {
-    let _host = `https://benrazor.net:${CME_SERVER_PORT}`;
+    let _host = `https://i1.benrazor.net:${CME_SERVER_PORT}`;
     if(isLocal()) {
         _host = `https://localhost:${CME_SERVER_PORT}`;
     }
